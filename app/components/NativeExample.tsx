@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { useNative, useNativeMessage, getEarlyLogs, clearEarlyLogs } from "@/app/lib";
+import {
+  useNative,
+  useNativeMessage,
+  getEarlyLogs,
+  clearEarlyLogs,
+} from "@/app/lib";
 import type { NativeMessage } from "@/app/lib";
 
 export function NativeExample() {
@@ -110,10 +115,10 @@ function NativeLogViewer() {
             type,
             message,
           },
-        ].slice(-50)
+        ].slice(-50),
       );
     },
-    []
+    [],
   );
 
   React.useEffect(() => {
@@ -126,7 +131,10 @@ function NativeLogViewer() {
 
     const handleNativeMessage = (e: any) => {
       const logType = e.detail?.type || "receive";
-      addLog(logType as "send" | "receive" | "error" | "info", JSON.stringify(e.detail?.message || e.detail));
+      addLog(
+        logType as "send" | "receive" | "error" | "info",
+        JSON.stringify(e.detail?.message || e.detail),
+      );
     };
 
     window.addEventListener("nativeMessageReceived", handleNativeMessage);
@@ -186,9 +194,14 @@ function NativeLogViewer() {
           ) : (
             <div className="space-y-1">
               {logs.map((log) => (
-                <div key={log.id} className={`text-xs ${getLogColor(log.type)}`}>
+                <div
+                  key={log.id}
+                  className={`text-xs ${getLogColor(log.type)}`}
+                >
                   <span>[{log.timestamp}]</span>
-                  <span className="ml-2 font-semibold">{getLogPrefix(log.type)}</span>
+                  <span className="ml-2 font-semibold">
+                    {getLogPrefix(log.type)}
+                  </span>
                   <span className="ml-2">{log.message}</span>
                 </div>
               ))}

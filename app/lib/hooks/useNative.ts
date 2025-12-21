@@ -26,7 +26,7 @@ export function useNative(options: UseNativeOptions = {}) {
         sendNativeMessage(message);
       }
     },
-    [enabled, isHydrated]
+    [enabled, isHydrated],
   );
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function useNative(options: UseNativeOptions = {}) {
 export function useNativeMessage<T extends NativeMessage["type"]>(
   messageType: T,
   handler: (message: NativeMessage & { type: T }) => void,
-  enabled = true
+  enabled = true,
 ) {
   useNative({
     onMessage: (msg: NativeMessage) => {

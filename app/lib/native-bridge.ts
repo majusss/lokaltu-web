@@ -30,7 +30,7 @@ const createReadyPromise = () => {
 
   return new Promise<boolean>((resolve) => {
     let resolved = false;
-    
+
     const cleanup = () => {
       if (resolved) return;
       resolved = true;
@@ -55,12 +55,12 @@ const createReadyPromise = () => {
 export function initNativeBridge() {
   if (typeof window === "undefined") return;
   if (isInitialized) return;
-  
+
   isInitialized = true;
 
   if (typeof window.AndroidBridge?.postMessage === "function") {
     nativePostMessage = window.AndroidBridge.postMessage.bind(
-      window.AndroidBridge
+      window.AndroidBridge,
     );
   }
 
@@ -78,7 +78,7 @@ export function initNativeBridge() {
         window.dispatchEvent(
           new CustomEvent("nativeMessageReceived", {
             detail: { type: "receive", message },
-          })
+          }),
         );
       }
 
@@ -88,7 +88,7 @@ export function initNativeBridge() {
         } catch (error) {
           console.error(
             "[NativeBridge] Listener error:",
-            error instanceof Error ? error.message : error
+            error instanceof Error ? error.message : error,
           );
         }
       });
@@ -143,7 +143,7 @@ export function sendNativeMessage(message: NativeMessage) {
   window.dispatchEvent(
     new CustomEvent("nativeMessageReceived", {
       detail: { type: "send", message },
-    })
+    }),
   );
 
   window.AndroidBridge?.postMessage?.(JSON.stringify(message));
