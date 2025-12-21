@@ -1,6 +1,5 @@
-import Image from "next/image";
-import { NativeExample } from "./components/NativeExample";
+import NFCReader from "./components/NFCReader";
 
 export default function Home() {
-  return <NativeExample />;
+  return <NFCReader />;
 }
