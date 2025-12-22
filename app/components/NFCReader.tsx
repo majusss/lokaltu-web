@@ -15,14 +15,10 @@ export default function NFCReader() {
     setNfcData("");
 
     try {
-      // Wyślij request i czekaj na odpowiedź
       const result = await send<
         | { type: "NFC_RESULT"; payload: string }
         | { type: "NFC_ERROR"; error: string }
-      >(
-        { type: "REQUEST_NFC" },
-        30000 // 30s timeout na zbliżenie tagu
-      );
+      >({ type: "REQUEST_NFC" }, 30000);
 
       if (result.type === "NFC_RESULT") {
         setNfcData(result.payload);

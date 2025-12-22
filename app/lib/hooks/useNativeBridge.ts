@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 type NativeMessage =
   | { type: "APP_READY" }
@@ -35,14 +35,12 @@ let bridgeInitialized = false;
 function initBridge() {
   if (typeof window === "undefined" || bridgeInitialized) return;
 
-  // Sprawdź czy native bridge NAPRAWDĘ istnieje (wstrzyknięty przez Androida)
   if (!window.AndroidBridge?.postMessage) {
     return;
   }
 
   bridgeInitialized = true;
 
-  // Wyślij APP_READY do natywnej strony
   try {
     window.AndroidBridge.postMessage(JSON.stringify({ type: "APP_READY" }));
   } catch (e) {
@@ -51,7 +49,10 @@ function initBridge() {
 }
 
 export function useNativeBridge() {
-  const [isReady, setIsReady] = useState(false);
+  const isReady = useMemo(
+    () => typeof window !== "undefined" && !!window.AndroidBridge?.postMessage,
+    []
+  );
   const pendingRequests = useRef(
     new Map<string, (msg: NativeMessage) => void>()
   );
@@ -61,29 +62,21 @@ export function useNativeBridge() {
   useEffect(() => {
     initBridge();
 
-    const hasNativeBridge =
-      typeof window !== "undefined" && !!window.AndroidBridge?.postMessage;
+    if (!isReady) return;
 
-    setIsReady(hasNativeBridge);
-
-    if (!hasNativeBridge) return;
-
-    // Handler dla wiadomości z native
     messageHandler.current = (msg: NativeMessage) => {
-      // Sprawdź czy ktoś czeka na tę wiadomość
       pendingRequests.current.forEach((resolve) => {
         resolve(msg);
       });
       pendingRequests.current.clear();
     };
 
-    // Podłącz się do __nativeDispatch
     window.__nativeDispatch = messageHandler.current;
 
     return () => {
       window.__nativeDispatch = undefined;
     };
-  }, []);
+  }, [isReady]);
 
   const send = async <T extends NativeMessage>(
     message: NativeMessage,
