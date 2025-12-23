@@ -51,10 +51,10 @@ function initBridge() {
 export function useNativeBridge() {
   const isReady = useMemo(
     () => typeof window !== "undefined" && !!window.AndroidBridge?.postMessage,
-    []
+    [],
   );
   const pendingRequests = useRef(
-    new Map<string, (msg: NativeMessage) => void>()
+    new Map<string, (msg: NativeMessage) => void>(),
   );
   const requestId = useRef(0);
   const messageHandler = useRef<((msg: NativeMessage) => void) | null>(null);
@@ -80,7 +80,7 @@ export function useNativeBridge() {
 
   const send = async <T extends NativeMessage>(
     message: NativeMessage,
-    timeoutMs = 5000
+    timeoutMs = 5000,
   ): Promise<T> => {
     if (!isReady || !window.AndroidBridge) {
       throw new Error("Native bridge not available");

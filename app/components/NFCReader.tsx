@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNativeBridge } from "../lib/hooks/useNativeBridge";
+import { useNativeBridge } from "../../lib/hooks/useNativeBridge";
 
 export default function NFCReader() {
   const { send, isReady } = useNativeBridge();
@@ -37,25 +37,25 @@ export default function NFCReader() {
   }
 
   return (
-    <div className="p-8 space-y-4">
+    <div className="space-y-4 p-8">
       <h1 className="text-2xl font-bold">NFC Reader</h1>
 
       <button
         onClick={startNFCScan}
         disabled={scanning}
-        className="bg-blue-500 text-white px-6 py-3 rounded disabled:opacity-50"
+        className="rounded bg-blue-500 px-6 py-3 text-white disabled:opacity-50"
       >
         {scanning ? "📱 Zbliż tag NFC..." : "Skanuj NFC"}
       </button>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded">
+        <div className="rounded border border-red-400 bg-red-100 p-4 text-red-700">
           ❌ {error}
         </div>
       )}
 
       {nfcData && (
-        <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded">
+        <div className="rounded border border-green-400 bg-green-100 p-4 text-green-700">
           <p className="font-bold">✅ Tag odczytany:</p>
           <p className="mt-2 break-all">{nfcData}</p>
         </div>

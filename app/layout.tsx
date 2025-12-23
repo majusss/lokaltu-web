@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
+import { Kalnia, Urbanist } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({});
+const kalnia = Kalnia({ variable: "--font-kalnia", subsets: ["latin"] });
+const urbanist = Urbanist({ variable: "--font-urbanist", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,8 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={`${inter.className} antialiased`}>{children}</body>
+      <html lang="pl">
+        <body
+          className={`${kalnia.variable} ${urbanist.className} antialiased`}
+        >
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );
