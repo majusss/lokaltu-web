@@ -1,7 +1,25 @@
 "use server";
 
+import {
+  PostDefaultArgs,
+  PostGetPayload,
+} from "@/generated/prisma/models/Post";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
+
+const postWithAuthor = {
+  include: {
+    author: {
+      select: {
+        id: true,
+        name: true,
+        avatarUrl: true,
+      },
+    },
+  },
+} satisfies PostDefaultArgs;
+
+export type PostWithAuthor = PostGetPayload<typeof postWithAuthor>;
 
 export async function amIAdmin() {
   const user = await currentUser();
@@ -30,6 +48,7 @@ export async function getAdminPosts(page: number = 1, limit: number = 10) {
       orderBy: {
         createdAt: "desc",
       },
+      ...postWithAuthor,
     }),
     prisma.post.count(),
   ]);
@@ -59,4 +78,34 @@ export async function createAdminPost(title: string, content: string) {
   });
 
   return post;
+}
+
+export async function deletePost(postId: number, reason: string) {
+  if (!(await amIAdmin())) {
+    throw new Error("Unauthorized");
+  }
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    include: { author: true },
+  });
+
+  if (!post) {
+    throw new Error("Post not found");
+  }
+
+  await prisma.$transaction([
+    prisma.notification.create({
+      data: {
+        userId: post.authorId,
+        title: "Post usunięty",
+        message: `Twój post "${post.title}" został usunięty. Powód: ${reason}`,
+      },
+    }),
+    prisma.post.delete({
+      where: { id: postId },
+    }),
+  ]);
+
+  return { success: true };
 }

@@ -1,4 +1,9 @@
+import { createClerkClient } from "@clerk/nextjs/server";
 import prisma from "../lib/prisma";
+
+const clerk = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+});
 
 const posts = [
   {
@@ -103,35 +108,74 @@ const posts = [
   },
 ];
 
+async function syncUsersFromClerk() {
+  console.log("🔄 Synchronizuję użytkowników z Clerk...");
+
+  const clerkUsers = await clerk.users.getUserList({ limit: 100 });
+
+  for (const clerkUser of clerkUsers.data) {
+    await prisma.user.upsert({
+      where: { id: clerkUser.id },
+      update: {
+        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+        name: clerkUser.firstName ?? clerkUser.username ?? "Unknown",
+        avatarUrl: clerkUser.imageUrl,
+      },
+      create: {
+        id: clerkUser.id,
+        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+        name: clerkUser.firstName ?? clerkUser.username ?? "Unknown",
+        avatarUrl: clerkUser.imageUrl,
+      },
+    });
+  }
+
+  console.log(`✅ Zsynchronizowano ${clerkUsers.data.length} użytkowników`);
+  return clerkUsers.data;
+}
+
 async function main() {
-  console.log("🌱 Rozpoczynam seedowanie postów...");
+  console.log("🌱 Rozpoczynam seedowanie...");
 
-  const userId = "user_37QVWBA6SozHxP24mIahjHZFznC";
+  const users = await syncUsersFromClerk();
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-
-  if (!user) {
-    console.error("❌ Nie znaleziono użytkownika z ID:", userId);
+  if (users.length === 0) {
+    console.error("❌ Brak użytkowników w Clerk");
     process.exit(1);
   }
 
-  console.log(`👤 Używam użytkownika: ${user.name}`);
+  const lokaltuUser = users.find((u) => u.firstName === "Zespol Lokaltu");
+  if (!lokaltuUser) {
+    console.error("❌ Nie znaleziono użytkownika 'Zespol Lokaltu'");
+    process.exit(1);
+  }
 
-  const now = new Date();
+  console.log(`👤 Używam użytkownika: ${lokaltuUser.firstName}`);
 
-  await prisma.post.createMany({
-    data: posts.map((post, index) => ({
-      title: post.title,
-      content: post.content,
-      allowed: true,
-      authorId: userId,
-      createdAt: new Date(now.getTime() - index * 24 * 60 * 60 * 1000),
-    })),
+  await prisma.admin.deleteMany();
+  await prisma.admin.create({
+    data: { userId: lokaltuUser.id },
   });
+  console.log(`👑 Ustawiono admina: ${lokaltuUser.firstName}`);
 
-  console.log(`🎉 Seedowanie zakończone! Dodano ${posts.length} postów.`);
+  const existingPosts = await prisma.post.count();
+  if (existingPosts > 0) {
+    console.log(`ℹ️ Posty już istnieją (${existingPosts}), pomijam dodawanie`);
+  } else {
+    const now = new Date();
+    await prisma.post.createMany({
+      data: posts.map((post, index) => ({
+        title: post.title,
+        content: post.content,
+        allowed: true,
+        authorId: lokaltuUser.id,
+        createdAt: new Date(now.getTime() - index * 24 * 60 * 60 * 1000),
+      })),
+    });
+    console.log(`🎉 Dodano ${posts.length} postów`);
+  }
+
+  console.log("✅ Seedowanie zakończone!");
 }
 
 main()

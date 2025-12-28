@@ -9,6 +9,7 @@ datasource db {
 
 model Admin {
   userId String @id
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model Place {
@@ -40,6 +41,16 @@ model Achievement {
   users       User[]
 }
 
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 model User {
   id               String   @id
   name             String
@@ -48,10 +59,10 @@ model User {
   lokaltuPoints    Int      @default(0)
   avatarUrl        String
   pushTokens       String[]
-  // ecoShoppingHistory EcoShopping[]
-  // friends       User[]   @relation("UserFriends")
   profileCompleted Boolean  @default(false)
 
-  achievements Achievement[]
-  posts        Post[]
+  achievements  Achievement[]
+  posts         Post[]
+  notifications Notification[]
+  admin         Admin?
 }
