@@ -1,13 +1,11 @@
 import prisma from "@/lib/prisma";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
+import Image from "next/image";
 import { redirect, RedirectType } from "next/navigation";
+import BgPhotos from "../onboarding/_components/bg-photos";
+import SignInClient from "./_componnets/singin-client";
+
+import noise from "@/app/assets/sign-in/noise.png";
 
 export default async function SignInPage() {
   const user = await currentUser();
@@ -25,20 +23,16 @@ export default async function SignInPage() {
     return redirect("/", RedirectType.replace);
   }
 
-  // custom authentication components here
   return (
-    <div>
-      <SignedOut>
-        <SignInButton />
-        <SignUpButton>
-          <button className="text-ceramic-white h-10 cursor-pointer rounded-full bg-[#6c47ff] px-4 text-sm font-medium sm:h-12 sm:px-5 sm:text-base">
-            Sign Up
-          </button>
-        </SignUpButton>
-      </SignedOut>
-      <SignedIn>
-        <UserButton />
-      </SignedIn>
+    <div className="overflow-y-hidden">
+      <BgPhotos />
+      <div className="absolute h-screen w-screen bg-white/60"></div>
+      <Image
+        className="fixed -bottom-1/4 scale-200"
+        src={noise}
+        alt="Background noise"
+      />
+      <SignInClient />
     </div>
   );
 }
