@@ -17,7 +17,7 @@ export default function BgPhotos() {
   const doubleImagesC = [...images, ...images].sort(() => 0.5 - Math.random());
 
   return (
-    <div className="absolute inset-0 -z-10 flex gap-2 overflow-hidden p-2">
+    <div className="absolute inset-0 -z-10 flex gap-2 overflow-hidden">
       <div className="animate-scroll-down flex flex-1 flex-col gap-2">
         {doubleImagesA.map((src, index) => (
           <Image
