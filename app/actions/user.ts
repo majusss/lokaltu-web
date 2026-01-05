@@ -7,7 +7,7 @@ export async function getUserDb() {
   const user = await currentUser();
 
   if (!user) {
-    throw new Error("Unauthorized");
+    return null;
   }
 
   const userDb = await prisma.user.findFirst({

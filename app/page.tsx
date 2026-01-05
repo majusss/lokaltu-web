@@ -1,15 +1,16 @@
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getUserDb } from "./actions/user";
 
-export default function Home() {
-  return (
-    <div>
-      <SignedOut>
-        <Link href="/sign-in">Sign In</Link>
-      </SignedOut>
-      <SignedIn>
-        <UserButton />
-      </SignedIn>
-    </div>
-  );
+export default async function Home() {
+  const user = await getUserDb();
+
+  if (!user) {
+    return redirect("/onboarding");
+  }
+
+  if (user.profileCompleted == false) {
+    return redirect("/complete-profile");
+  }
+
+  return redirect("/homescreen");
 }
