@@ -65,7 +65,7 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
-  --input: hsla(0, 0%, 77%, 1);
+  --input: rgb(222, 222, 222);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -204,6 +204,32 @@
     opacity: 1;
     color: white;
     transition: all 0.1s ease 0s;
+  }
+
+  .border-main-input {
+    --input-radius: 1rem;
+    position: relative;
+    border-radius: var(--input-radius);
+  }
+
+  .border-main-input::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 3px solid transparent;
+    border-radius: var(--input-radius);
+    background: linear-gradient(220.65deg, #f2da00 7.35%, #44d021 85.94%)
+      border-box;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) padding-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) padding-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
   }
 }
 

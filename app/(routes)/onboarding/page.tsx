@@ -1,4 +1,4 @@
-import BgPhotos from "./_components/bg-photos";
+import BgPhotos from "@/components/bg-photos";
 import { OnboardingClient } from "./_components/onboarding-client";
 
 export default function OnboardingPage() {

@@ -44,12 +44,12 @@ export function OnboardingClient() {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      router.replace("/sign-in");
+      router.replace("/auth");
     }
   };
 
   const handleSkip = () => {
-    router.replace("/sign-in");
+    router.replace("/auth/sign-up");
   };
 
   const step = steps[currentStep];
