@@ -1,18 +1,10 @@
 import { Progress } from "@/components/ui/progress";
-import {
-  ChartArea,
-  CircleUserRound,
-  Home,
-  Map,
-  MessageCircle,
-  Nfc,
-} from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import Image from "next/image";
 
 import dummyshop from "@/app/assets/dummy_shop.png";
 import ecology from "@/app/assets/ecology.svg";
 import poins from "@/app/assets/points.svg";
-import { cn } from "@/lib/utils";
 
 function StatsBar() {
   return (
@@ -168,65 +160,6 @@ function LocalShops() {
   );
 }
 
-function NavBar() {
-  return (
-    <div className="fixed bottom-0 left-0 grid w-screen grid-cols-5 justify-between border-t bg-white px-6 pt-2 pb-4">
-      {[
-        {
-          name: "Główna",
-          icon: Home,
-          isActive: true,
-        },
-        {
-          name: "Mapa",
-          icon: Map,
-        },
-        {
-          name: "Skanuj",
-          icon: false,
-        },
-        {
-          name: "Statystyki",
-          icon: ChartArea,
-        },
-        {
-          name: "Konto",
-          icon: CircleUserRound,
-        },
-      ].map((item) => (
-        <div
-          key={item.name}
-          className="flex flex-col items-center justify-center gap-1 text-center"
-        >
-          {typeof item.icon != "boolean" ? (
-            <item.icon
-              className={cn(
-                item.isActive
-                  ? "fill-[#59CA34] text-[#59CA34]"
-                  : "text-[#A0A4B0]",
-              )}
-            />
-          ) : (
-            <div className="relative h-full w-full">
-              <div className="absolute left-1/2 -translate-x-1/2 -translate-y-[calc(50%+0.5rem)] scale-150 rounded-full bg-[#59CA34] p-1.5">
-                <Nfc className="-rotate-90 text-[#C6EBBA]" size={32} />
-              </div>
-            </div>
-          )}
-          <span
-            className={cn(
-              "text-sm font-medium text-nowrap",
-              item.isActive ? "text-[#59CA34]" : "text-[#A0A4B0]",
-            )}
-          >
-            {item.name}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default async function HomescreenPage() {
   return (
     <div className="relative pt-18">
@@ -243,7 +176,6 @@ export default async function HomescreenPage() {
         <UserChallanges />
         <LocalShops />
       </div>
-      <NavBar />
     </div>
   );
 }
