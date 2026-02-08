@@ -5,6 +5,7 @@ import Image from "next/image";
 import dummyshop from "@/app/assets/dummy_shop.png";
 import ecology from "@/app/assets/ecology.svg";
 import poins from "@/app/assets/points.svg";
+import { currentUser } from "@clerk/nextjs/server";
 
 function StatsBar() {
   return (
@@ -41,8 +42,8 @@ function UserPosts() {
           </div>
           <p className="mt-2 text-sm leading-[1.3] font-medium">
             Słuchajcie, zawsze myślałam, że miód to po prostu miód. Aż do
-            dzisiaj! Wpadłam do małego sklepiku "Pszczeli Raj" na ulicy
-            Rzeszowskiej.
+            dzisiaj! Wpadłam do małego sklepiku &quot;Pszczeli Raj&quot; na
+            ulicy Rzeszowskiej.
             <br />
             Kupiłam tam miód gryczany... Ludzie, to jest zupełnie inny wymiar
             smaku! Intensywny, trochę korzenny... Idealny do herbaty na jesienne
@@ -161,12 +162,13 @@ function LocalShops() {
 }
 
 export default async function HomescreenPage() {
+  const user = await currentUser();
   return (
     <div className="relative pt-18">
       <div className="absolute top-0 left-0 h-50 w-full bg-[linear-gradient(249.58deg,#61F681_0%,#49BF12_49.21%,#DBC443_97.83%)] pt-8">
         <div className="mb-2 px-6">
           <h1 className="text-2xl font-semibold text-[#E3F8D9]">
-            Co dzisiaj nowego, Polina?
+            Co dzisiaj nowego, {user?.fullName}?
           </h1>
         </div>
       </div>

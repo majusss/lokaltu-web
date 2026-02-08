@@ -2,12 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSignUp } from "@clerk/nextjs";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
 
 export default function VerifyEmail() {
   const router = useRouter();
-  const [code, setCode] = useState(["", "", "", ""]);
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length > 1) return;
@@ -29,10 +34,38 @@ export default function VerifyEmail() {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
+    if (!isLoaded) return;
+    setLoading(true);
+    setError("");
     const fullCode = code.join("");
-    if (fullCode.length === 6) {
-      router.push("/auth/set-password");
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code: fullCode,
+      });
+
+      if (completeSignUp.status !== "complete") {
+        console.log(JSON.stringify(completeSignUp, null, 2));
+        if (completeSignUp.missingFields.includes("password")) {
+          router.push("/auth/welcome");
+        }
+      }
+      if (completeSignUp.status === "complete") {
+        await setActive({ session: completeSignUp.createdSessionId });
+        router.push("/");
+      }
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2));
+      const error = err as {
+        errors?: { longMessage?: string; message: string }[];
+      };
+      if (error.errors?.[0]?.longMessage) {
+        setError(error.errors[0].longMessage);
+      } else {
+        setError("Błędny kod weryfikacyjny.");
+      }
+      setLoading(false);
     }
   };
 
@@ -42,7 +75,7 @@ export default function VerifyEmail() {
     <Fragment>
       <h1 className="text-4xl font-semibold">Wprowadź kod</h1>
       <p className="text-muted-foreground mt-2">
-        Wysłaliśmy na Twój email 5 cyfr potrzebnych by zweryfikować konto
+        Wysłaliśmy na Twój email 6 cyfr potrzebnych by zweryfikować konto
       </p>
 
       <div className="mt-12 flex justify-center gap-2">
@@ -62,6 +95,7 @@ export default function VerifyEmail() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               inputMode="numeric"
               pattern="[0-9]*"
+              disabled={loading}
             />
           </div>
         ))}
@@ -70,10 +104,18 @@ export default function VerifyEmail() {
       <Button
         className="mt-8 w-full"
         onClick={handleVerify}
-        disabled={!isCodeComplete}
+        disabled={!isCodeComplete || loading}
       >
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Weryfikuj
       </Button>
+
+      {error && (
+        <div className="bg-destructive/15 text-destructive mt-4 flex items-center gap-2 rounded-md p-3 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <p>{error}</p>
+        </div>
+      )}
 
       <p className="mt-4 text-center text-sm text-white/70">
         Nie otrzymałeś kodu?{" "}

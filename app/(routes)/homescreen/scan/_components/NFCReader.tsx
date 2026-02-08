@@ -1,7 +1,7 @@
 "use client";
 
+import { useNativeBridge } from "@/lib/hooks/useNativeBridge";
 import { useState } from "react";
-import { useNativeBridge } from "../../lib/hooks/useNativeBridge";
 
 export default function NFCReader() {
   const { send, isReady } = useNativeBridge();
