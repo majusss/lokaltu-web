@@ -212,12 +212,6 @@
     transition: all 0.1s ease 0s;
   }
 
-  .border-main-input {
-    --input-radius: 1rem;
-    position: relative;
-    border-radius: var(--input-radius);
-  }
-
   .border-main-input::before {
     content: "";
     position: absolute;
@@ -236,6 +230,34 @@
     mask-composite: exclude;
     pointer-events: none;
     z-index: 1;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .anim-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  @keyframes shimmer {
+    from {
+      transform: translateX(-100%) skewX(-20deg);
+    }
+    to {
+      transform: translateX(200%) skewX(-20deg);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2.5s infinite;
   }
 }
 

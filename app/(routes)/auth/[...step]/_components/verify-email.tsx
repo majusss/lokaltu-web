@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSignUp } from "@clerk/nextjs";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment, useState } from "react";
+import { useState } from "react";
+
+import { AuthLayout } from "./auth-layout";
 
 export default function VerifyEmail() {
   const router = useRouter();
@@ -56,15 +58,8 @@ export default function VerifyEmail() {
         router.push("/");
       }
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      const error = err as {
-        errors?: { longMessage?: string; message: string }[];
-      };
-      if (error.errors?.[0]?.longMessage) {
-        setError(error.errors[0].longMessage);
-      } else {
-        setError("Błędny kod weryfikacyjny.");
-      }
+      console.error(err);
+      setError("Nieprawidłowy kod. Spróbuj ponownie.");
       setLoading(false);
     }
   };
@@ -72,23 +67,22 @@ export default function VerifyEmail() {
   const isCodeComplete = code.every((digit) => digit !== "");
 
   return (
-    <Fragment>
-      <h1 className="text-4xl font-semibold">Wprowadź kod</h1>
-      <p className="text-muted-foreground mt-2">
-        Wysłaliśmy na Twój email 6 cyfr potrzebnych by zweryfikować konto
-      </p>
-
-      <div className="mt-12 flex justify-center gap-2">
+    <AuthLayout
+      title="Wprowadź kod"
+      subtitle="Wysłaliśmy 6-cyfrowy kod na Twój adres email."
+      error={error}
+    >
+      <div className="mt-4 flex justify-between gap-2">
         {code.map((digit, index) => (
           <div
             key={index}
-            className={`relative h-12 w-14 bg-white ${digit ? "border-main-input" : ""}`}
-            style={{ borderRadius: "var(--input-radius, 1rem)" }}
+            className={`relative h-16 flex-1 rounded-2xl border-2 bg-white shadow-sm transition-all ${
+              digit ? "border-primary shadow-md" : "border-neutral-100"
+            } focus-within:border-primary focus-within:shadow-md`}
           >
             <Input
               id={`code-${index}`}
-              className="h-full w-full border-0 bg-transparent text-center text-2xl font-semibold ring-0 outline-none focus-visible:ring-0"
-              style={{ borderRadius: "var(--input-radius, 1rem)" }}
+              className="h-full w-full border-none bg-transparent px-0 text-center text-2xl font-bold shadow-none ring-0 outline-none focus:bg-transparent focus:shadow-none focus:ring-0"
               maxLength={1}
               value={digit}
               onChange={(e) => handleCodeChange(index, e.target.value)}
@@ -102,25 +96,22 @@ export default function VerifyEmail() {
       </div>
 
       <Button
-        className="mt-8 w-full"
+        variant="premium"
+        size="lg"
         onClick={handleVerify}
         disabled={!isCodeComplete || loading}
+        className="mt-6"
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
         Weryfikuj
       </Button>
 
-      {error && (
-        <div className="bg-destructive/15 text-destructive mt-4 flex items-center gap-2 rounded-md p-3 text-sm">
-          <AlertCircle className="h-4 w-4" />
-          <p>{error}</p>
-        </div>
-      )}
-
-      <p className="mt-4 text-center text-sm text-white/70">
+      <p className="mt-6 text-center text-sm font-medium text-neutral-500">
         Nie otrzymałeś kodu?{" "}
-        <button className="font-semibold underline">Wyślij ponownie</button>
+        <button className="text-primary font-bold hover:underline">
+          Wyślij ponownie
+        </button>
       </p>
-    </Fragment>
+    </AuthLayout>
   );
 }

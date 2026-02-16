@@ -30,17 +30,19 @@ export default async function AuthPage({
   const currentStep = step?.[0] || "sign-up";
 
   return (
-    <div className="overflow-y-hidden">
-      <BgPhotos />
-      <div className="absolute h-screen bg-white/60"></div>
-      <Image
-        className="fixed -bottom-1/4 scale-200"
-        src={noise}
-        alt="Background noise"
-      />
+    <div className="relative min-h-screen overflow-x-hidden overflow-y-auto">
+      <div className="fixed inset-0 -z-50">
+        <BgPhotos />
+        <div className="absolute inset-0 bg-white/60"></div>
+        <Image
+          className="absolute inset-0 h-full w-full object-cover opacity-20"
+          src={noise}
+          alt="Background noise"
+        />
+      </div>
 
-      <div className="absolute grid h-full w-full place-items-center bg-white/60 backdrop-blur-sm">
-        <div className="w-full px-7">
+      <div className="grid min-h-screen w-full place-items-center bg-white/40 px-6 py-12 backdrop-blur-sm">
+        <div className="w-full max-w-md">
           <AuthClient step={currentStep} />
         </div>
       </div>

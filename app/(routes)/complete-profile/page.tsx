@@ -6,7 +6,7 @@ import BgPhotos from "@/components/bg-photos";
 import { Button } from "@/components/ui/button";
 import { useNativeBridge } from "@/lib/hooks/useNativeBridge";
 import { useUser } from "@clerk/nextjs";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Nfc, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,15 +27,13 @@ export default function CompleteProfilePage() {
         router.push("/auth/sign-in");
         return;
       }
-      if (user) {
-        try {
-          const userDb = await getUserDb();
-          if (userDb) {
-            setIsSynced(true);
-          }
-        } catch (e) {
-          console.error(e);
-        }
+
+      try {
+        await getUserDb();
+      } catch (e) {
+        console.error("Failed to check user sync:", e);
+      } finally {
+        setIsSynced(true);
       }
     };
 
@@ -47,7 +45,6 @@ export default function CompleteProfilePage() {
     setError("");
 
     try {
-      // @ts-expect-error - send type inference might be tricky
       const result = await send({ type: "REQUEST_NFC" }, 30000);
 
       const nfcResult = result as
@@ -74,62 +71,105 @@ export default function CompleteProfilePage() {
 
   if (!isLoaded || !isSynced) {
     return (
-      <div className="overflow-y-hidden">
-        <BgPhotos />
-        <div className="absolute h-screen w-full bg-white/60"></div>
-        <Image
-          className="fixed -bottom-1/4 scale-200"
-          src={noise}
-          alt="Background noise"
-        />
-        <div className="absolute grid h-full w-full place-items-center bg-white/60 backdrop-blur-sm">
-          <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="relative min-h-screen overflow-hidden">
+        <div className="fixed inset-0 -z-50">
+          <BgPhotos />
+          <div className="absolute inset-0 bg-white/60"></div>
+          <Image
+            className="absolute inset-0 h-full w-full object-cover opacity-20"
+            src={noise}
+            alt="Background noise"
+          />
+        </div>
+        <div className="grid min-h-screen w-full place-items-center backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="text-primary h-10 w-10 animate-spin" />
+            <p className="text-muted-foreground animate-pulse font-medium">
+              Inicjalizacja...
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-y-hidden">
-      <BgPhotos />
-      <div className="absolute h-screen w-full bg-white/60"></div>
-      <Image
-        className="fixed -bottom-1/4 scale-200"
-        src={noise}
-        alt="Background noise"
-      />
+    <div className="relative min-h-screen overflow-x-hidden overflow-y-auto">
+      <div className="fixed inset-0 -z-50">
+        <BgPhotos />
+        <div className="absolute inset-0 bg-white/60"></div>
+        <Image
+          className="absolute inset-0 h-full w-full object-cover opacity-20"
+          src={noise}
+          alt="Background noise"
+        />
+      </div>
 
-      <div className="absolute grid h-full w-full place-items-center bg-white/60 backdrop-blur-sm">
-        <div className="w-full px-7">
-          <h1 className="text-4xl font-semibold">Dodaj torbę</h1>
-          <p className="text-muted-foreground mt-2">
-            Zeskanuj tag NFC na torbie lub pomiń ten krok
+      <div className="grid min-h-screen w-full place-items-center bg-white/40 px-6 py-12 backdrop-blur-sm">
+        <div className="anim-fade-in-up w-full max-w-md">
+          <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 drop-shadow-sm">
+            Dodaj swoją torbę
+          </h1>
+          <p className="mt-2 mb-10 text-lg leading-relaxed font-medium text-neutral-500">
+            Zeskanuj tag NFC, aby połączyć torbę ze swoją tożsamością w
+            aplikacji.
           </p>
 
-          {error && (
-            <div className="bg-destructive/15 text-destructive mt-8 flex items-center gap-2 rounded-md p-3 text-sm">
-              <AlertCircle className="h-4 w-4" />
-              <p>{error}</p>
+          <div className="flex flex-col gap-4">
+            {error && (
+              <div className="animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-600">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            <Button
+              variant="premium"
+              size="xl"
+              onClick={handleAddBag}
+              disabled={scanning || !isReady}
+              className="group relative flex items-center justify-center gap-4 overflow-hidden"
+            >
+              <div className="group-hover:animate-shimmer pointer-events-none absolute inset-0 skew-x-[-20deg] bg-linear-to-r from-transparent via-white/10 to-transparent"></div>
+
+              {scanning ? (
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-7 w-7 animate-spin" />
+                  <span>Skanowanie...</span>
+                </div>
+              ) : (
+                <>
+                  <Nfc className="h-7 w-7 stroke-[2.5]" />
+                  <span>Zeskanuj teraz</span>
+                </>
+              )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="lg"
+              className="mt-2"
+              onClick={handleSkip}
+              disabled={scanning}
+            >
+              Pominę ten krok
+            </Button>
+          </div>
+
+          <div className="mt-12 flex w-full items-start gap-4 rounded-3xl border border-white bg-white/30 p-6 text-left shadow-sm backdrop-blur-md">
+            <div className="bg-primary/10 rounded-2xl p-2.5">
+              <Sparkles className="text-primary h-5 w-5" />
             </div>
-          )}
-
-          <Button
-            className="mt-12 w-full"
-            onClick={handleAddBag}
-            disabled={scanning || !isReady}
-          >
-            {scanning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {scanning ? "Skanowanie..." : "Dodaj torbę"}
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="mt-4 w-full"
-            onClick={handleSkip}
-            disabled={scanning}
-          >
-            Pomiń
-          </Button>
+            <div>
+              <p className="mb-1 text-sm font-bold text-neutral-800">
+                Dla kogo to jest?
+              </p>
+              <p className="text-xs leading-relaxed font-medium text-neutral-600">
+                Każda torba Lokaltu posiada unikalny tag NFC. Dzięki niemu
+                możesz zbierać punkty i personalizować swoje doświadczenie.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

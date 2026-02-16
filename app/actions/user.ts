@@ -25,11 +25,27 @@ export async function completeProfile(bagId?: string) {
     throw new Error("Unauthorized");
   }
 
-  await prisma.user.update({
+  const email = user.emailAddresses[0]?.emailAddress || "";
+  const name =
+    user.firstName || user.username || email.split("@")[0] || "Użytkownik";
+  const avatarUrl = user.imageUrl || "";
+
+  await prisma.user.upsert({
     where: {
       id: user.id,
     },
-    data: {
+    update: {
+      bagId,
+      profileCompleted: true,
+      name,
+      email,
+      avatarUrl,
+    },
+    create: {
+      id: user.id,
+      name,
+      email,
+      avatarUrl,
       bagId,
       profileCompleted: true,
     },

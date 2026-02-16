@@ -4,11 +4,13 @@ import google from "@/app/assets/sign-in/google.svg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSignUp } from "@clerk/nextjs";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useState } from "react";
+import { useState } from "react";
+
+import { AuthLayout } from "./auth-layout";
 
 export default function SignUp() {
   const router = useRouter();
@@ -30,14 +32,22 @@ export default function SignUp() {
 
       router.push("/auth/verify-email");
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      const error = err as {
-        errors?: { longMessage?: string; message: string }[];
+      console.error(err);
+      const clerkError = err as {
+        errors?: { code: string; message: string; longMessage?: string }[];
       };
-      if (error.errors?.[0]?.longMessage) {
-        setError(error.errors[0].longMessage);
+      const code = clerkError.errors?.[0]?.code;
+
+      if (code === "form_identifier_exists") {
+        setError("To konto już istnieje. Zaloguj się.");
+      } else if (code === "form_password_length_too_short") {
+        setError("Hasło jest za krótkie.");
       } else {
-        setError("Wystąpił błąd. Spróbuj ponownie.");
+        setError(
+          clerkError.errors?.[0]?.longMessage ||
+            clerkError.errors?.[0]?.message ||
+            "Wystąpił błąd. Spróbuj ponownie.",
+        );
       }
       setLoading(false);
     }
@@ -54,27 +64,19 @@ export default function SignUp() {
         redirectUrlComplete: "/",
       });
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      const error = err as {
-        errors?: { longMessage?: string; message: string }[];
-      };
-      if (error.errors?.[0]?.longMessage) {
-        setError(error.errors[0].longMessage);
-      } else {
-        setError("Wystąpił błąd. Spróbuj ponownie.");
-      }
+      setError("Nie udało się połączyć z kontem Google.");
       setLoading(false);
     }
   };
 
   return (
-    <Fragment>
-      <h1 className="text-4xl font-semibold">Dołącz do Lokaltu!</h1>
-      <p className="text-muted-foreground mt-2">To jest tego warte...</p>
-
+    <AuthLayout
+      title="Dołącz do Lokaltu!"
+      subtitle="Zacznij zbierać punkty i wspierać rzemieślników."
+      error={error}
+    >
       <Input
-        className="mt-12"
-        placeholder="Email"
+        placeholder="Wpisz swój email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -83,57 +85,64 @@ export default function SignUp() {
       />
 
       <Button
-        className="mt-4 w-full"
+        variant="premium"
+        size="lg"
         onClick={handleEmailSubmit}
         disabled={!email || loading}
+        className="mt-2"
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Dalej
+        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+        Kontynuuj
       </Button>
 
-      {error && (
-        <div className="bg-destructive/15 text-destructive mt-4 flex items-center gap-2 rounded-md p-3 text-sm">
-          <AlertCircle className="h-4 w-4" />
-          <p>{error}</p>
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-neutral-200"></div>
         </div>
-      )}
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-transparent px-4 font-bold text-neutral-400">
+            LUB
+          </span>
+        </div>
+      </div>
 
-      <p className="text-muted-foreground w-full py-6 text-center font-bold">
-        LUB
-      </p>
-
-      <button
+      <Button
+        variant="google"
+        size="lg"
         onClick={handleGoogleSignIn}
-        className="flex h-14 w-full items-center rounded-xl bg-white p-4 shadow-xl transition-transform active:scale-95 disabled:opacity-50"
         disabled={loading}
       >
         {loading ? (
-          <Loader2 className="mx-auto h-6 w-6 animate-spin text-black" />
+          <Loader2 className="h-6 w-6 animate-spin" />
         ) : (
           <>
-            <Image src={google} alt="Google logo" />
-            <p className="w-full text-center text-lg font-semibold">
-              Użyj konto Google
-            </p>
+            <Image src={google} alt="Google logo" className="h-6 w-6" />
+            <span>Użyj konta Google</span>
           </>
         )}
-      </button>
+      </Button>
 
-      <p className="mt-4 text-center text-sm text-[#FEFAF6]/70">
-        Tworząc konto akceptujesz <span className="underline">Regulamin</span> i{" "}
-        <span className="underline">Politykę prywatności</span>
+      <p className="mt-6 px-4 text-center text-xs leading-relaxed font-medium text-neutral-400">
+        Tworząc konto akceptujesz{" "}
+        <span className="cursor-pointer text-neutral-800 underline">
+          Regulamin
+        </span>{" "}
+        i{" "}
+        <span className="cursor-pointer text-neutral-800 underline">
+          Politykę prywatności
+        </span>
       </p>
 
-      <div id="clerk-captcha" />
-
-      <div className="absolute bottom-12 left-0 w-full">
-        <p className="text-center font-semibold text-white">
+      <div className="mt-12 flex justify-center">
+        <p className="text-center font-bold text-neutral-600">
           Masz już konto?{" "}
-          <Link href="/auth/sign-in" className="underline">
+          <Link href="/auth/sign-in" className="text-primary hover:underline">
             Zaloguj się
           </Link>
         </p>
       </div>
-    </Fragment>
+
+      <div id="clerk-captcha" />
+    </AuthLayout>
   );
 }

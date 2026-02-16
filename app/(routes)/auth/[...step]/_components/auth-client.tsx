@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 import EnterPassword from "./enter-password";
 import SetPassword from "./set-password";
 import SignIn from "./sign-in";
@@ -25,6 +26,8 @@ export default function AuthClient({ step }: AuthClientProps) {
       return <Welcome />;
     case "enter-password":
       return <EnterPassword />;
+    case "sso-callback":
+      return <AuthenticateWithRedirectCallback />;
     default:
       return <SignUp />;
   }

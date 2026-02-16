@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSignIn } from "@clerk/nextjs";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment, useState } from "react";
+import { useState } from "react";
+
+import { AuthLayout } from "./auth-layout";
 
 export default function EnterPassword() {
   const router = useRouter();
@@ -15,73 +17,59 @@ export default function EnterPassword() {
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    if (!isLoaded) return;
+    if (!password || !isLoaded) return;
     setLoading(true);
     setError("");
 
     try {
-      const signInAttempt = await signIn.attemptFirstFactor({
+      const result = await signIn.attemptFirstFactor({
         strategy: "password",
         password,
       });
 
-      if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
         router.push("/");
-      } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
-        setError("Niepoprawne hasło lub błąd logowania.");
-        setLoading(false);
       }
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      const error = err as {
-        errors?: { longMessage?: string; message: string }[];
-      };
-      if (error.errors?.[0]?.longMessage) {
-        setError(error.errors[0].longMessage);
-      } else {
-        setError("Wystąpił błąd. Spróbuj ponownie.");
-      }
+      console.error(err);
+      setError("Nieprawidłowe hasło. Spróbuj ponownie.");
       setLoading(false);
     }
   };
 
   return (
-    <Fragment>
-      <h1 className="text-4xl font-semibold">Hasło</h1>
-      <p className="text-muted-foreground mt-2">Wpisz hasło do Twojego konta</p>
-
+    <AuthLayout
+      title="Wpisz hasło"
+      subtitle="Podaj hasło do swojego konta, aby kontynuować."
+      error={error}
+    >
       <Input
-        className="mt-12"
         type="password"
-        placeholder="Hasło"
+        placeholder="Twoje hasło"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         disabled={loading}
+        className="mt-2"
       />
 
+      <div className="flex justify-start px-1">
+        <button className="text-primary text-sm font-bold hover:underline">
+          Nie pamiętasz hasła?
+        </button>
+      </div>
+
       <Button
-        className="mt-8 w-full"
+        variant="premium"
+        size="lg"
         onClick={handleSubmit}
         disabled={!password || loading}
+        className="mt-6"
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
         Zaloguj się
       </Button>
-
-      {error && (
-        <div className="bg-destructive/15 text-destructive mt-4 flex items-center gap-2 rounded-md p-3 text-sm">
-          <AlertCircle className="h-4 w-4" />
-          <p>{error}</p>
-        </div>
-      )}
-
-      <p className="mt-4 text-center text-sm text-white/70">
-        Zapomniałeś hasła?{" "}
-        <button className="font-semibold underline">Zresetuj hasło</button>
-      </p>
-    </Fragment>
+    </AuthLayout>
   );
 }

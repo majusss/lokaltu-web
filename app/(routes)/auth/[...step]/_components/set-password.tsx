@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSignUp } from "@clerk/nextjs";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment, useState } from "react";
+import { useState } from "react";
+
+import { AuthLayout } from "./auth-layout";
 
 export default function SetPassword() {
   const router = useRouter();
@@ -14,8 +16,10 @@ export default function SetPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const isValid = password.length >= 8;
+
   const handleSubmit = async () => {
-    if (!isLoaded || !password || password.length < 8) return;
+    if (!isValid || !isLoaded) return;
     setLoading(true);
     setError("");
 
@@ -26,66 +30,59 @@ export default function SetPassword() {
 
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
-        router.push("/");
-      } else {
-        console.error(JSON.stringify(completeSignUp, null, 2));
-        setError("Nie udało się ustawić hasła.");
-        setLoading(false);
+        router.push("/complete-profile");
       }
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      const error = err as {
-        errors?: { longMessage?: string; message: string }[];
-      };
-      if (error.errors?.[0]?.longMessage) {
-        setError(error.errors[0].longMessage);
-      } else {
-        setError("Wystąpił błąd. Spróbuj ponownie.");
-      }
+      console.error(err);
+      setError("Nie udało się ustawić hasła. Spróbuj ponownie.");
       setLoading(false);
     }
   };
 
-  const isValid = password.length >= 8;
-
   return (
-    <Fragment>
-      <h1 className="text-4xl font-semibold">Ustaw hasło</h1>
-      <p className="text-muted-foreground mt-2">
-        Aby Twój wpływ był tylko Twój...
-      </p>
-
+    <AuthLayout
+      title="Ustaw hasło"
+      subtitle="Zadbaj o bezpieczeństwo swojego konta."
+      error={error}
+    >
       <Input
-        className="mt-12"
         type="password"
-        placeholder="Hasło"
+        placeholder="Twoje bezpieczne hasło"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         disabled={loading}
+        className="mt-2"
       />
 
-      {password && password.length < 8 && (
-        <p className="mt-2 text-sm text-red-500">
-          Hasło musi mieć minimum 8 znaków
-        </p>
-      )}
+      <div className="flex items-center gap-2 px-1">
+        <div
+          className={`h-1.5 flex-1 rounded-full transition-all ${password.length >= 4 ? "bg-primary" : "bg-neutral-200"}`}
+        />
+        <div
+          className={`h-1.5 flex-1 rounded-full transition-all ${password.length >= 8 ? "bg-primary" : "bg-neutral-200"}`}
+        />
+        <div
+          className={`h-1.5 flex-1 rounded-full transition-all ${password.length >= 12 ? "bg-primary" : "bg-neutral-200"}`}
+        />
+      </div>
+
+      <p
+        className={`text-sm font-bold transition-colors ${isValid ? "text-primary" : "text-neutral-400"}`}
+      >
+        {isValid ? "✓ Hasło jest bezpieczne" : "• Minimum 8 znaków"}
+      </p>
 
       <Button
-        className="mt-8 w-full"
+        variant="premium"
+        size="lg"
         onClick={handleSubmit}
         disabled={!isValid || loading}
+        className="mt-6"
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
         Zakończ
       </Button>
-
-      {error && (
-        <div className="bg-destructive/15 text-destructive mt-4 flex items-center gap-2 rounded-md p-3 text-sm">
-          <AlertCircle className="h-4 w-4" />
-          <p>{error}</p>
-        </div>
-      )}
-    </Fragment>
+    </AuthLayout>
   );
 }
