@@ -1,6 +1,6 @@
 "use client";
 
-import { PostWithAuthor } from "@/app/actions/admin";
+import { PostWithAuthor } from "@/app/actions/posts";
 import { useRef } from "react";
 import { AddPost } from "./add-post";
 import { Posts, PostsRef } from "./posts";

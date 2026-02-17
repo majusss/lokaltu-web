@@ -13,13 +13,26 @@ model Admin {
 }
 
 model Place {
-  id        Int    @id @default(autoincrement())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
   name      String
   address   String
   latitude  Float
   longitude Float
-  category  String
-  imageUrl  String
+  category  String // e.g., "restaurant", "park", "gym"
+
+  // Custom places created by users
+  creatorId String?
+  creator   User?   @relation("CreatedPlaces", fields: [creatorId], references: [id])
+
+  // Images
+  image       String? // URL into R2 bucket
+  description String?
+
+  savedBy User[] @relation("SavedPlaces")
+
+  @@index([latitude, longitude])
 }
 
 model Post {
@@ -65,4 +78,6 @@ model User {
   posts         Post[]
   notifications Notification[]
   admin         Admin?
+  createdPlaces Place[]        @relation("CreatedPlaces")
+  savedPlaces   Place[]        @relation("SavedPlaces")
 }

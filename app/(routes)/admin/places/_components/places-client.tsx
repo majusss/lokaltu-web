@@ -1,6 +1,12 @@
 "use client";
 
-import { createPlace, deletePlace, getPlaces } from "@/app/actions/places";
+import {
+  createPlace,
+  deletePlace,
+  getPlaces,
+  updatePlace,
+} from "@/app/actions/places";
+import { getUploadUrl } from "@/app/actions/storage";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,8 +42,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlaceModel as Place } from "@/generated/prisma/models/Place";
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ImagePlus,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useRef, useState, useTransition } from "react";
 
 interface PlacesClientProps {
   initialData: {
@@ -59,7 +72,13 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
+  const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -67,7 +86,15 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
     latitude: "",
     longitude: "",
     category: "",
-    imageUrl: "",
+  });
+
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    address: "",
+    latitude: "",
+    longitude: "",
+    category: "",
+    description: "",
   });
 
   const fetchData = (page: number, limit: number) => {
@@ -88,13 +115,23 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
 
   const handleCreate = () => {
     startTransition(async () => {
+      let imageKey = "";
+      if (imageFile) {
+        const { url, key } = await getUploadUrl(imageFile.type);
+        await fetch(url, {
+          method: "PUT",
+          body: imageFile,
+          headers: { "Content-Type": imageFile.type },
+        });
+        imageKey = key;
+      }
       await createPlace({
         name: formData.name,
         address: formData.address,
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
         category: formData.category,
-        imageUrl: formData.imageUrl,
+        image: imageKey,
       });
       setCreateDialogOpen(false);
       setFormData({
@@ -103,8 +140,8 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         latitude: "",
         longitude: "",
         category: "",
-        imageUrl: "",
       });
+      setImageFile(null);
       fetchData(currentPage, pageSize);
     });
   };
@@ -122,6 +159,50 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
   const openDeleteDialog = (place: Place) => {
     setPlaceToDelete(place);
     setDeleteDialogOpen(true);
+  };
+
+  const openEditDialog = (place: Place) => {
+    setPlaceToEdit(place);
+    setEditFormData({
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude.toString(),
+      longitude: place.longitude.toString(),
+      category: place.category,
+      description:
+        (place as Place & { description?: string }).description || "",
+    });
+    setEditImageFile(null);
+    setEditDialogOpen(true);
+  };
+
+  const handleEdit = () => {
+    if (!placeToEdit) return;
+    startTransition(async () => {
+      let imageKey: string | undefined;
+      if (editImageFile) {
+        const { url, key } = await getUploadUrl(editImageFile.type);
+        await fetch(url, {
+          method: "PUT",
+          body: editImageFile,
+          headers: { "Content-Type": editImageFile.type },
+        });
+        imageKey = key;
+      }
+      await updatePlace(placeToEdit.id, {
+        name: editFormData.name,
+        address: editFormData.address,
+        latitude: parseFloat(editFormData.latitude),
+        longitude: parseFloat(editFormData.longitude),
+        category: editFormData.category,
+        description: editFormData.description || undefined,
+        ...(imageKey ? { image: imageKey } : {}),
+      });
+      setEditDialogOpen(false);
+      setPlaceToEdit(null);
+      setEditImageFile(null);
+      fetchData(currentPage, pageSize);
+    });
   };
 
   return (
@@ -240,15 +321,28 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="imageUrl">URL zdjęcia</Label>
-                      <Input
-                        id="imageUrl"
-                        value={formData.imageUrl}
+                      <Label>Zdjęcie</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
                         onChange={(e) =>
-                          setFormData({ ...formData, imageUrl: e.target.value })
+                          setImageFile(e.target.files?.[0] ?? null)
                         }
-                        placeholder="https://..."
+                        className="hidden"
                       />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50 flex h-24 w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-sm transition-colors"
+                      >
+                        <ImagePlus className="h-6 w-6" />
+                        <span>
+                          {imageFile
+                            ? imageFile.name
+                            : "Kliknij, aby wybrać zdjęcie"}
+                        </span>
+                      </button>
                     </div>
                   </div>
                   <DialogFooter>
@@ -292,7 +386,11 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                   >
                     <TableCell>
                       <img
-                        src={place.imageUrl}
+                        src={
+                          place.image
+                            ? `${process.env.NEXT_PUBLIC_CDN_URL}/${place.image}`
+                            : ""
+                        }
                         alt={place.name}
                         className="h-12 w-12 rounded-md object-cover"
                       />
@@ -308,14 +406,24 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                       {place.latitude.toFixed(4)}, {place.longitude.toFixed(4)}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openDeleteDialog(place)}
-                        disabled={isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(place)}
+                          disabled={isPending}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => openDeleteDialog(place)}
+                          disabled={isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -373,6 +481,124 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
               disabled={isPending}
             >
               {isPending ? "Usuwanie..." : "Usuń"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Edytuj miejsce</DialogTitle>
+            <DialogDescription>
+              Edytuj dane miejsca &quot;{placeToEdit?.name}&quot;.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Nazwa</Label>
+              <Input
+                id="edit-name"
+                value={editFormData.name}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-address">Adres</Label>
+              <Input
+                id="edit-address"
+                value={editFormData.address}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, address: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-lat">Szerokość</Label>
+                <Input
+                  id="edit-lat"
+                  value={editFormData.latitude}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      latitude: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-lng">Długość</Label>
+                <Input
+                  id="edit-lng"
+                  value={editFormData.longitude}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      longitude: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-category">Kategoria</Label>
+              <Input
+                id="edit-category"
+                value={editFormData.category}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    category: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description">Opis</Label>
+              <Input
+                id="edit-description"
+                value={editFormData.description}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    description: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Nowe zdjęcie (opcjonalne)</Label>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEditImageFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => editFileInputRef.current?.click()}
+                className="border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50 flex h-20 w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-sm transition-colors"
+              >
+                <ImagePlus className="h-5 w-5" />
+                <span>
+                  {editImageFile
+                    ? editImageFile.name
+                    : "Kliknij, aby zmienić zdjęcie"}
+                </span>
+              </button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Anuluj
+            </Button>
+            <Button onClick={handleEdit} disabled={isPending}>
+              {isPending ? "Zapisywanie..." : "Zapisz"}
             </Button>
           </DialogFooter>
         </DialogContent>

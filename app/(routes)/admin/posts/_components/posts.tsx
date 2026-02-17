@@ -1,6 +1,7 @@
 "use client";
 
-import { deletePost, getAdminPosts, PostWithAuthor } from "@/app/actions/admin";
+import { deletePost } from "@/app/actions/admin";
+import { getPosts, PostWithAuthor } from "@/app/actions/posts";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -66,7 +67,7 @@ export const Posts = forwardRef<PostsRef, PostsProps>(
 
     const fetchPosts = (page: number, limit: number) => {
       startTransition(async () => {
-        const data = await getAdminPosts(page, limit);
+        const data = await getPosts(page, limit);
         setPosts(data.posts);
         setTotalPages(data.totalPages);
         setTotalCount(data.totalCount);

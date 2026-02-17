@@ -2,6 +2,7 @@ import { Progress } from "@/components/ui/progress";
 import { MessageCircle } from "lucide-react";
 import Image from "next/image";
 
+import { getPosts, PostWithAuthor } from "@/app/actions/posts";
 import dummyshop from "@/app/assets/dummy_shop.png";
 import ecology from "@/app/assets/ecology.svg";
 import poins from "@/app/assets/points.svg";
@@ -23,38 +24,35 @@ function StatsBar() {
   );
 }
 
-function UserPosts() {
+function UserPosts({ posts }: { posts: PostWithAuthor[] }) {
   return (
     <div>
       <h2 className="ml-1.5 text-2xl font-semibold">Co w trawie piszczy?</h2>
-      <div className="mt-3">
+      <div className="mt-3 space-y-4">
         {/* fck cards */}
-        <div className="rounded-2xl border-[0.5px] border-[#E1E1E1] p-4">
-          <div className="inline-flex w-fit items-center gap-2">
-            <Image
-              src="https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18zN0FHTUNBTk92bHNVMEZmUHRnU2IxMEFXMkkiLCJyaWQiOiJ1c2VyXzM3UVZXQkE2U296SHhQMjRtSWFoakhaRnpuQyIsImluaXRpYWxzIjoiWiJ9"
-              width={28}
-              height={28}
-              alt="Katarzyna Nowak's profile pic"
-              className="rounded-full"
-            />
-            <p className="text-lg font-medium">Katarzyna Nowak</p>
+        {posts.map((post) => (
+          <div
+            className="rounded-2xl border-[0.5px] border-[#E1E1E1] p-4"
+            key={post.id}
+          >
+            <div className="inline-flex w-fit items-center gap-2">
+              <Image
+                src={post.author.avatarUrl}
+                width={28}
+                height={28}
+                alt="Katarzyna Nowak's profile pic"
+                className="rounded-full"
+              />
+              <p className="text-lg font-medium">{post.author.name}</p>
+            </div>
+            <p className="mt-2 text-sm leading-[1.3] font-medium">
+              {post.content}
+            </p>
+            <div className="mt-2 flex w-full justify-end">
+              <MessageCircle className="fill-[#59CA34] text-[#59CA34]" />
+            </div>
           </div>
-          <p className="mt-2 text-sm leading-[1.3] font-medium">
-            Słuchajcie, zawsze myślałam, że miód to po prostu miód. Aż do
-            dzisiaj! Wpadłam do małego sklepiku &quot;Pszczeli Raj&quot; na
-            ulicy Rzeszowskiej.
-            <br />
-            Kupiłam tam miód gryczany... Ludzie, to jest zupełnie inny wymiar
-            smaku! Intensywny, trochę korzenny... Idealny do herbaty na jesienne
-            wieczory. <br />
-            Wspierajmy tych lokalnych magików, bo tworzą prawdziwe cuda. Polecam
-            z całego serca! ❤️
-          </p>
-          <div className="mt-2 flex w-full justify-end">
-            <MessageCircle className="fill-[#59CA34] text-[#59CA34]" />
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -163,6 +161,7 @@ function LocalShops() {
 
 export default async function HomescreenPage() {
   const user = await currentUser();
+  const posts = await getPosts(1, 10);
   return (
     <div className="relative pt-18">
       <div className="absolute top-0 left-0 h-50 w-full bg-[linear-gradient(249.58deg,#61F681_0%,#49BF12_49.21%,#DBC443_97.83%)] pt-8">
@@ -174,7 +173,7 @@ export default async function HomescreenPage() {
       </div>
       <StatsBar />
       <div className="h-full w-full -translate-y-4 space-y-4 rounded-t-2xl bg-white px-6 pt-4 pb-18">
-        <UserPosts />
+        <UserPosts posts={posts.posts} />
         <UserChallanges />
         <LocalShops />
       </div>

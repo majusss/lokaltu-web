@@ -1,25 +1,7 @@
 "use server";
 
-import {
-  PostDefaultArgs,
-  PostGetPayload,
-} from "@/generated/prisma/models/Post";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
-
-const postWithAuthor = {
-  include: {
-    author: {
-      select: {
-        id: true,
-        name: true,
-        avatarUrl: true,
-      },
-    },
-  },
-} satisfies PostDefaultArgs;
-
-export type PostWithAuthor = PostGetPayload<typeof postWithAuthor>;
 
 export async function amIAdmin() {
   const user = await currentUser();
@@ -32,33 +14,6 @@ export async function amIAdmin() {
     },
   });
   return admin ?? false;
-}
-
-export async function getAdminPosts(page: number = 1, limit: number = 10) {
-  if (!(await amIAdmin())) {
-    throw new Error("Unauthorized");
-  }
-
-  const skip = (page - 1) * limit;
-
-  const [posts, totalCount] = await Promise.all([
-    prisma.post.findMany({
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-      ...postWithAuthor,
-    }),
-    prisma.post.count(),
-  ]);
-
-  return {
-    posts,
-    totalPages: Math.ceil(totalCount / limit),
-    currentPage: page,
-    totalCount,
-  };
 }
 
 export async function createAdminPost(title: string, content: string) {

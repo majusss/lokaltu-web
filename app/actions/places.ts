@@ -1,7 +1,23 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { currentUser } from "@clerk/nextjs/server";
 import { amIAdmin } from "./admin";
+
+export async function getMapPlaces() {
+  return prisma.place.findMany({
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      latitude: true,
+      longitude: true,
+      category: true,
+      image: true,
+      description: true,
+    },
+  });
+}
 
 export async function getPlaces(page: number = 1, limit: number = 10) {
   if (!(await amIAdmin())) {
@@ -32,16 +48,46 @@ export async function createPlace(data: {
   latitude: number;
   longitude: number;
   category: string;
-  imageUrl: string;
+  image: string; // Changed from imageUrl
+  description?: string; // Added
 }) {
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  return prisma.place.create({
+    data: {
+      ...data,
+      creatorId: user.id,
+    },
+  });
+}
+
+export async function updatePlace(
+  id: string,
+  data: {
+    name?: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    category?: string;
+    image?: string;
+    description?: string;
+  },
+) {
   if (!(await amIAdmin())) {
     throw new Error("Unauthorized");
   }
 
-  return prisma.place.create({ data });
+  return prisma.place.update({
+    where: { id },
+    data,
+  });
 }
 
-export async function deletePlace(id: number) {
+export async function deletePlace(id: string) {
   if (!(await amIAdmin())) {
     throw new Error("Unauthorized");
   }
