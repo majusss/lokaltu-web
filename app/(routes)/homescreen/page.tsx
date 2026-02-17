@@ -1,12 +1,13 @@
 import { Progress } from "@/components/ui/progress";
-import { MessageCircle } from "lucide-react";
 import Image from "next/image";
 
-import { getPosts, PostWithAuthor } from "@/app/actions/posts";
+import { amIAdmin } from "@/app/actions/admin";
+import { getPosts } from "@/app/actions/posts";
 import dummyshop from "@/app/assets/dummy_shop.png";
 import ecology from "@/app/assets/ecology.svg";
 import poins from "@/app/assets/points.svg";
 import { currentUser } from "@clerk/nextjs/server";
+import { PostsList } from "./_components/posts-list";
 
 function StatsBar() {
   return (
@@ -19,40 +20,6 @@ function StatsBar() {
       <div className="inline-flex items-center gap-2">
         <Image src={ecology} alt="ecology icon" width={26} height={26} />
         232 kg CO₂ mniej
-      </div>
-    </div>
-  );
-}
-
-function UserPosts({ posts }: { posts: PostWithAuthor[] }) {
-  return (
-    <div>
-      <h2 className="ml-1.5 text-2xl font-semibold">Co w trawie piszczy?</h2>
-      <div className="mt-3 space-y-4">
-        {/* fck cards */}
-        {posts.map((post) => (
-          <div
-            className="rounded-2xl border-[0.5px] border-[#E1E1E1] p-4"
-            key={post.id}
-          >
-            <div className="inline-flex w-fit items-center gap-2">
-              <Image
-                src={post.author.avatarUrl}
-                width={28}
-                height={28}
-                alt="Katarzyna Nowak's profile pic"
-                className="rounded-full"
-              />
-              <p className="text-lg font-medium">{post.author.name}</p>
-            </div>
-            <p className="mt-2 text-sm leading-[1.3] font-medium">
-              {post.content}
-            </p>
-            <div className="mt-2 flex w-full justify-end">
-              <MessageCircle className="fill-[#59CA34] text-[#59CA34]" />
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -114,15 +81,15 @@ function LocalShops() {
             imageUrl: dummyshop.src,
           },
           {
-            name: "Sklep owocowo-warzywny “Owocjusz”",
+            name: "Sklep owocowo-warzywny \u201cOwocjusz\u201d",
             imageUrl: dummyshop.src,
           },
           {
-            name: "Piekarnia “U Wilusza”",
+            name: "Piekarnia \u201cU Wilusza\u201d",
             imageUrl: dummyshop.src,
           },
           {
-            name: "Piekarnia “Sztuka Chleba”",
+            name: "Piekarnia \u201cSztuka Chleba\u201d",
             imageUrl: dummyshop.src,
           },
         ].map((shop) => (
@@ -162,18 +129,23 @@ function LocalShops() {
 export default async function HomescreenPage() {
   const user = await currentUser();
   const posts = await getPosts(1, 10);
+  const isAdmin = !!(await amIAdmin());
   return (
     <div className="relative pt-18">
       <div className="absolute top-0 left-0 h-50 w-full bg-[linear-gradient(249.58deg,#61F681_0%,#49BF12_49.21%,#DBC443_97.83%)] pt-8">
         <div className="mb-2 px-6">
-          <h1 className="text-2xl font-semibold text-[#E3F8D9]">
+          <h1 className="break- truncate text-2xl font-semibold text-[#E3F8D9]">
             Co dzisiaj nowego, {user?.fullName}?
           </h1>
         </div>
       </div>
       <StatsBar />
       <div className="h-full w-full -translate-y-4 space-y-4 rounded-t-2xl bg-white px-6 pt-4 pb-18">
-        <UserPosts posts={posts.posts} />
+        <PostsList
+          posts={posts.posts}
+          currentUserId={user?.id ?? ""}
+          isAdmin={isAdmin}
+        />
         <UserChallanges />
         <LocalShops />
       </div>

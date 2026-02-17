@@ -36,13 +36,24 @@ model Place {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   title     String
   content   String
-  allowed   Boolean  @default(false)
+  allowed   Boolean   @default(false)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id])
+  createdAt DateTime  @default(now())
+  comments  Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Achievement {
@@ -76,6 +87,7 @@ model User {
 
   achievements  Achievement[]
   posts         Post[]
+  comments      Comment[]
   notifications Notification[]
   admin         Admin?
   createdPlaces Place[]        @relation("CreatedPlaces")

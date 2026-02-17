@@ -17,6 +17,11 @@ const postWithAuthor = {
         avatarUrl: true,
       },
     },
+    _count: {
+      select: {
+        comments: true,
+      },
+    },
   },
 } satisfies PostDefaultArgs;
 

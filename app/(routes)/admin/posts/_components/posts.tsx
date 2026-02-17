@@ -1,5 +1,6 @@
 "use client";
 
+import { CommentsSheet } from "@/app/(routes)/homescreen/_components/comments-sheet";
 import { deletePost } from "@/app/actions/admin";
 import { getPosts, PostWithAuthor } from "@/app/actions/posts";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import {
   forwardRef,
   useImperativeHandle,
@@ -45,12 +46,16 @@ interface PostsProps {
   initialPosts: PostWithAuthor[];
   initialTotalPages: number;
   initialTotalCount: number;
+  currentUserId: string;
 }
 
 const PAGE_SIZES = [5, 10, 20, 50, 100];
 
 export const Posts = forwardRef<PostsRef, PostsProps>(
-  ({ initialPosts, initialTotalPages, initialTotalCount }, ref) => {
+  (
+    { initialPosts, initialTotalPages, initialTotalCount, currentUserId },
+    ref,
+  ) => {
     const [posts, setPosts] = useState<PostWithAuthor[]>(initialPosts);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -64,6 +69,7 @@ export const Posts = forwardRef<PostsRef, PostsProps>(
     );
     const [deleteReason, setDeleteReason] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
+    const [commentsPostId, setCommentsPostId] = useState<number | null>(null);
 
     const fetchPosts = (page: number, limit: number) => {
       startTransition(async () => {
@@ -173,7 +179,16 @@ export const Posts = forwardRef<PostsRef, PostsProps>(
                 <CardContent>
                   <p>{post.content}</p>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCommentsPostId(post.id)}
+                  >
+                    <MessageCircle className="mr-1 h-4 w-4" />
+                    Komentarze
+                    {post._count.comments > 0 && ` (${post._count.comments})`}
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"
@@ -248,6 +263,21 @@ export const Posts = forwardRef<PostsRef, PostsProps>(
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {commentsPostId !== null && (
+          <CommentsSheet
+            postId={commentsPostId}
+            commentCount={
+              posts.find((p) => p.id === commentsPostId)?._count.comments ?? 0
+            }
+            currentUserId={currentUserId}
+            isAdmin={true}
+            open={true}
+            onOpenChange={(open) => {
+              if (!open) setCommentsPostId(null);
+            }}
+          />
+        )}
       </>
     );
   },

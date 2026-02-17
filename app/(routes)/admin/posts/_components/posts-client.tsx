@@ -9,12 +9,14 @@ interface PostsPageClientProps {
   initialPosts: PostWithAuthor[];
   initialTotalPages: number;
   initialTotalCount: number;
+  currentUserId: string;
 }
 
 export function PostsPageClient({
   initialPosts,
   initialTotalPages,
   initialTotalCount,
+  currentUserId,
 }: PostsPageClientProps) {
   const postsRef = useRef<PostsRef>(null);
 
@@ -32,6 +34,7 @@ export function PostsPageClient({
             initialPosts={initialPosts}
             initialTotalPages={initialTotalPages}
             initialTotalCount={initialTotalCount}
+            currentUserId={currentUserId}
           />
         </div>
 
