@@ -1,7 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChartArea, CircleUserRound, Home, Map, Nfc } from "lucide-react";
+import * as heroicons_outline from "@heroicons/react/24/outline";
+import * as heroicons_solid from "@heroicons/react/24/solid";
+
+import { Nfc } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,12 +15,14 @@ export default function Navbar() {
       {[
         {
           name: "Główna",
-          icon: Home,
+          icon: heroicons_outline.HomeIcon,
+          activeIcon: heroicons_solid.HomeIcon,
           href: "/homescreen",
         },
         {
           name: "Mapa",
-          icon: Map,
+          icon: heroicons_outline.MapIcon,
+          activeIcon: heroicons_solid.MapIcon,
           href: "/homescreen/map",
         },
         {
@@ -27,25 +32,27 @@ export default function Navbar() {
         },
         {
           name: "Statystyki",
-          icon: ChartArea,
+          icon: heroicons_outline.ChartPieIcon,
+          activeIcon: heroicons_solid.ChartPieIcon,
           href: "/homescreen/stats",
         },
         {
           name: "Konto",
-          icon: CircleUserRound,
+          icon: heroicons_outline.UserCircleIcon,
+          activeIcon: heroicons_solid.UserCircleIcon,
           href: "/homescreen/profile",
         },
       ].map((item) => (
         <Link href={item.href} key={item.name} className="h-full w-full">
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-center">
             {typeof item.icon != "boolean" ? (
-              <item.icon
-                className={cn(
-                  item.href == path
-                    ? "fill-[#59CA34] text-[#59CA34]"
-                    : "text-[#A0A4B0]",
+              <>
+                {item.href == path ? (
+                  <item.activeIcon className="h-7 text-[#59CA34]" />
+                ) : (
+                  <item.icon className="h-7 text-[#A0A4B0]" />
                 )}
-              />
+              </>
             ) : (
               <div className="relative h-full w-full">
                 <div className="absolute left-1/2 -translate-x-1/2 -translate-y-[calc(50%+0.5rem)] scale-150 rounded-full bg-[#59CA34] p-1.5">

@@ -4,13 +4,15 @@ import { getMapPlaces } from "@/app/actions/places";
 import { AddPlaceDialog } from "@/components/places/add-place-dialog";
 import {
   Map,
+  MapControls,
   MapMarker,
   MarkerContent,
   MarkerPopup,
   useMap,
 } from "@/components/ui/map";
+import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { MapPin, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type MapPlace = {
   id: string;
@@ -24,6 +26,25 @@ type MapPlace = {
 };
 
 const CDN_URL = process.env.NEXT_PUBLIC_CDN_URL;
+
+function UserLocationMarker({
+  latitude,
+  longitude,
+}: {
+  latitude: number;
+  longitude: number;
+}) {
+  return (
+    <MapMarker longitude={longitude} latitude={latitude}>
+      <MarkerContent>
+        <div className="relative flex h-6 w-6 items-center justify-center">
+          <div className="absolute h-full w-full animate-ping rounded-full bg-blue-500/40 opacity-75"></div>
+          <div className="relative h-4 w-4 rounded-full border-2 border-white bg-blue-600 shadow-lg"></div>
+        </div>
+      </MarkerContent>
+    </MapMarker>
+  );
+}
 
 function MapClickHandler({
   onPick,
@@ -47,7 +68,32 @@ function MapClickHandler({
   return null;
 }
 
+function MapAutoCenterer({
+  latitude,
+  longitude,
+}: {
+  latitude: number | null;
+  longitude: number | null;
+}) {
+  const { map } = useMap();
+  const hasCentered = useRef(false);
+
+  useEffect(() => {
+    if (latitude && longitude && map && !hasCentered.current) {
+      map.flyTo({
+        center: [longitude, latitude],
+        zoom: 14,
+        duration: 2000,
+      });
+      hasCentered.current = true;
+    }
+  }, [latitude, longitude, map]);
+
+  return null;
+}
+
 export default function MapPage() {
+  const { latitude, longitude } = useGeolocation();
   const [isPicking, setIsPicking] = useState(false);
   const [pickedLocation, setPickedLocation] = useState<{
     lat: number;
@@ -88,6 +134,19 @@ export default function MapPage() {
   return (
     <div className="relative h-screen w-full pb-18">
       <Map theme="light" attributionControl={false}>
+        <MapControls
+          showLocate
+          position="bottom-right"
+          className="mb-28"
+          userLocation={latitude && longitude ? { latitude, longitude } : null}
+        />
+
+        <MapAutoCenterer latitude={latitude} longitude={longitude} />
+
+        {latitude && longitude && (
+          <UserLocationMarker latitude={latitude} longitude={longitude} />
+        )}
+
         {/* Place markers */}
         {places.map((place) => (
           <MapMarker
@@ -104,7 +163,7 @@ export default function MapPage() {
               </div>
             </MarkerContent>
             {selectedPlaceId === place.id && (
-              <MarkerPopup className="max-w-[280px] min-w-[200px] !rounded-xl !p-0 !shadow-lg">
+              <MarkerPopup className="max-w-[280px] min-w-[200px] rounded-xl! p-0! shadow-lg!">
                 <div className="overflow-hidden rounded-xl">
                   {place.image && CDN_URL && (
                     <img
@@ -166,13 +225,16 @@ export default function MapPage() {
         </>
       )}
 
-      {/* FAB - hidden during picking */}
+      {/* FAB - repositioned under map controls */}
       {!isPicking && (
-        <div className="absolute right-6 bottom-24 z-10">
+        <div className="fixed right-2 bottom-20 z-10">
           <AddPlaceDialog
             onStartPicking={handleStartPicking}
             pickedLocation={pickedLocation}
             onClearPicked={handleClearPicked}
+            userLocation={
+              latitude && longitude ? { latitude, longitude } : null
+            }
           />
         </div>
       )}

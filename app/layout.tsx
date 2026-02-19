@@ -1,3 +1,4 @@
+import { TwaBridgeProvider } from "@/lib/hooks/use-twa-bridge";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Kalnia, Urbanist } from "next/font/google";
@@ -22,7 +23,7 @@ export default function RootLayout({
         <body
           className={`${kalnia.variable} ${urbanist.className} antialiased`}
         >
-          {children}
+          <TwaBridgeProvider>{children}</TwaBridgeProvider>
         </body>
       </html>
     </ClerkProvider>

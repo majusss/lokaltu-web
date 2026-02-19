@@ -3,10 +3,10 @@ import Image from "next/image";
 
 import { amIAdmin } from "@/app/actions/admin";
 import { getPosts } from "@/app/actions/posts";
-import dummyshop from "@/app/assets/dummy_shop.png";
 import ecology from "@/app/assets/ecology.svg";
 import poins from "@/app/assets/points.svg";
 import { currentUser } from "@clerk/nextjs/server";
+import { NearbyShops } from "./_components/nearby-shops";
 import { PostsList } from "./_components/posts-list";
 
 function StatsBar() {
@@ -68,64 +68,6 @@ function UserChallanges() {
   );
 }
 
-function LocalShops() {
-  return (
-    <div>
-      <h2 className="ml-1.5 text-2xl font-semibold">
-        Kupuj lokalnie w Jarosławiu
-      </h2>
-      <div className="mt-3 space-y-4">
-        {[
-          {
-            name: "Plantacja na Adasach w Zapałowie",
-            imageUrl: dummyshop.src,
-          },
-          {
-            name: "Sklep owocowo-warzywny \u201cOwocjusz\u201d",
-            imageUrl: dummyshop.src,
-          },
-          {
-            name: "Piekarnia \u201cU Wilusza\u201d",
-            imageUrl: dummyshop.src,
-          },
-          {
-            name: "Piekarnia \u201cSztuka Chleba\u201d",
-            imageUrl: dummyshop.src,
-          },
-        ].map((shop) => (
-          <div
-            className="relative flex h-47 w-full flex-col justify-between"
-            key={shop.name}
-          >
-            <Image
-              src={shop.imageUrl}
-              alt={shop.name}
-              width={353}
-              height={188}
-              className="absolute -z-10 h-full w-full rounded-3xl object-cover"
-            />
-            <div className="m-4 inline-flex items-center">
-              <Image
-                src={poins}
-                alt=""
-                width={40}
-                height={40}
-                className="z-10"
-              />
-              <div className="flex h-fit -translate-x-3 items-center rounded-r-full bg-[#FFFCF8] px-4 py-0.5 text-center">
-                <span className="font-medium text-[#59CA34]">Zobacz</span>
-              </div>
-            </div>
-            <p className="m-4 text-3xl font-black text-[#FFF4E6]">
-              {shop.name}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default async function HomescreenPage() {
   const user = await currentUser();
   const posts = await getPosts(1, 10);
@@ -147,7 +89,7 @@ export default async function HomescreenPage() {
           isAdmin={isAdmin}
         />
         <UserChallanges />
-        <LocalShops />
+        <NearbyShops />
       </div>
     </div>
   );

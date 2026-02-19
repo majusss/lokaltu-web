@@ -29,12 +29,14 @@ interface AddPlaceDialogProps {
   onStartPicking: () => void;
   pickedLocation: { lat: number; lng: number } | null;
   onClearPicked: () => void;
+  userLocation?: { latitude: number; longitude: number } | null;
 }
 
 export function AddPlaceDialog({
   onStartPicking,
   pickedLocation,
   onClearPicked,
+  userLocation,
 }: AddPlaceDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -78,6 +80,15 @@ export function AddPlaceDialog({
   };
 
   const handleGetLocation = () => {
+    if (userLocation) {
+      setFormData((prev) => ({
+        ...prev,
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+      }));
+      return;
+    }
+
     setLocationLoading(true);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(

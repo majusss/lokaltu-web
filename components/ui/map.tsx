@@ -607,6 +607,8 @@ type MapControlsProps = {
   className?: string;
   /** Callback with user coordinates when located */
   onLocate?: (coords: { longitude: number; latitude: number }) => void;
+  /** Pre-acquired user location to avoid fresh browser requests */
+  userLocation?: { latitude: number; longitude: number } | null;
 };
 
 const positionClasses = {
@@ -659,6 +661,7 @@ function MapControls({
   showFullscreen = false,
   className,
   onLocate,
+  userLocation,
 }: MapControlsProps) {
   const { map } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
@@ -676,6 +679,19 @@ function MapControls({
   }, [map]);
 
   const handleLocate = useCallback(() => {
+    if (userLocation) {
+      map?.flyTo({
+        center: [userLocation.longitude, userLocation.latitude],
+        zoom: 14,
+        duration: 1500,
+      });
+      onLocate?.({
+        longitude: userLocation.longitude,
+        latitude: userLocation.latitude,
+      });
+      return;
+    }
+
     setWaitingForLocation(true);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -698,7 +714,7 @@ function MapControls({
         },
       );
     }
-  }, [map, onLocate]);
+  }, [map, onLocate, userLocation]);
 
   const handleFullscreen = useCallback(() => {
     const container = map?.getContainer();
