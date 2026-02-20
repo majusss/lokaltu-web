@@ -4,7 +4,7 @@ import { completeProfile, getUserDb } from "@/app/actions/user";
 import noise from "@/app/assets/sign-in/noise.png";
 import BgPhotos from "@/components/bg-photos";
 import { Button } from "@/components/ui/button";
-import { useNativeBridge } from "@/lib/hooks/useNativeBridge";
+import { useNfc } from "@/lib/hooks/use-nfc";
 import { useUser } from "@clerk/nextjs";
 import { AlertCircle, Loader2, Nfc, Sparkles } from "lucide-react";
 import Image from "next/image";
@@ -14,11 +14,10 @@ import { useEffect, useState } from "react";
 export default function CompleteProfilePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
-  const { send, isReady } = useNativeBridge();
+  const { scanning, error, startScan } = useNfc();
 
   const [isSynced, setIsSynced] = useState(false);
-  const [scanning, setScanning] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [completeError, setCompleteError] = useState<string>("");
 
   useEffect(() => {
     const checkSync = async () => {
@@ -41,26 +40,13 @@ export default function CompleteProfilePage() {
   }, [isLoaded, isSignedIn, user, router]);
 
   const handleAddBag = async () => {
-    setScanning(true);
-    setError("");
-
+    setCompleteError("");
     try {
-      const result = await send({ type: "REQUEST_NFC" }, 30000);
-
-      const nfcResult = result as
-        | { type: "NFC_RESULT"; payload: string }
-        | { type: "NFC_ERROR"; error: string };
-
-      if (nfcResult.type === "NFC_RESULT") {
-        await completeProfile(nfcResult.payload);
-        router.push("/");
-      } else {
-        setError(nfcResult.error);
-      }
+      const result = await startScan(30000);
+      await completeProfile(result.content);
+      router.push("/");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "NFC scan failed");
-    } finally {
-      setScanning(false);
+      setCompleteError(e instanceof Error ? e.message : "NFC scan failed");
     }
   };
 
@@ -116,10 +102,10 @@ export default function CompleteProfilePage() {
           </p>
 
           <div className="flex flex-col gap-4">
-            {error && (
+            {(error || completeError) && (
               <div className="animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-600">
                 <AlertCircle className="h-5 w-5 shrink-0" />
-                <p>{error}</p>
+                <p>{error || completeError}</p>
               </div>
             )}
 
@@ -127,7 +113,7 @@ export default function CompleteProfilePage() {
               variant="premium"
               size="xl"
               onClick={handleAddBag}
-              disabled={scanning || !isReady}
+              disabled={scanning}
               className="group relative flex items-center justify-center gap-4 overflow-hidden"
             >
               <div className="group-hover:animate-shimmer pointer-events-none absolute inset-0 skew-x-[-20deg] bg-linear-to-r from-transparent via-white/10 to-transparent"></div>

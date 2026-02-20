@@ -73,10 +73,10 @@ export default async function HomescreenPage() {
   const posts = await getPosts(1, 10);
   const isAdmin = !!(await amIAdmin());
   return (
-    <div className="relative pt-18">
+    <div className="relative pt-24">
       <div className="absolute top-0 left-0 h-50 w-full bg-[linear-gradient(249.58deg,#61F681_0%,#49BF12_49.21%,#DBC443_97.83%)] pt-8">
         <div className="mb-2 px-6">
-          <h1 className="break- truncate text-2xl font-semibold text-[#E3F8D9]">
+          <h1 className="break- truncate pt-6 text-2xl font-semibold text-[#E3F8D9]">
             Co dzisiaj nowego, {user?.fullName}?
           </h1>
         </div>

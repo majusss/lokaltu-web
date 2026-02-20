@@ -56,9 +56,10 @@ export default function SignIn() {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/auth/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: "/auth/return-to-app",
       });
     } catch (err) {
+      console.error("[Auth] Google Sign In Error:", err);
       setError("Nie udało się połączyć z kontem Google.");
       setLoading(false);
     }
