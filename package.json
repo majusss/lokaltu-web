@@ -10,6 +10,7 @@
     "lint": "eslint",
     "dev:syncdb": "pnpm prisma db push && pnpm prisma generate"
   },
+  "packageManager":"pnpm@10.22.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.991.0",
     "@aws-sdk/s3-request-presigner": "^3.991.0",
@@ -53,5 +54,8 @@
     "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
