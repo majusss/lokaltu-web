@@ -11,6 +11,7 @@ import {
   useEffect,
   useId,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -134,7 +135,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const containerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<MapLibreGL.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isStyleLoaded, setIsStyleLoaded] = useState(false);
   const currentStyleRef = useRef<MapStyleOption | null>(null);
   const styleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedTheme = useResolvedTheme(themeProp);
@@ -174,21 +174,20 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     });
 
     const styleDataHandler = () => {
-      clearStyleTimeout();
-      // Delay to ensure style is fully processed before allowing layer operations
-      // This is a workaround to avoid race conditions with the style loading
-      // else we have to force update every layer on setStyle change
-      styleTimeoutRef.current = setTimeout(() => {
-        setIsStyleLoaded(true);
-        if (projection) {
-          map.setProjection(projection);
-        }
-      }, 100);
+      if (map.isStyleLoaded()) {
+        clearStyleTimeout();
+        styleTimeoutRef.current = setTimeout(() => {
+          if (projection) {
+            map.setProjection(projection);
+          }
+        }, 100);
+      }
     };
     const loadHandler = () => setIsLoaded(true);
 
     map.on("load", loadHandler);
     map.on("styledata", styleDataHandler);
+    map.on("style.load", styleDataHandler);
     setMapInstance(map);
 
     return () => {
@@ -197,7 +196,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       map.off("styledata", styleDataHandler);
       map.remove();
       setIsLoaded(false);
-      setIsStyleLoaded(false);
       setMapInstance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -213,7 +211,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     clearStyleTimeout();
     currentStyleRef.current = newStyle;
-    setIsStyleLoaded(false);
 
     mapInstance.setStyle(newStyle, { diff: true });
   }, [mapInstance, resolvedTheme, mapStyles, clearStyleTimeout]);
@@ -221,9 +218,9 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const contextValue = useMemo(
     () => ({
       map: mapInstance,
-      isLoaded: isLoaded && isStyleLoaded,
+      isLoaded: isLoaded, // Simplified: use the main load state
     }),
-    [mapInstance, isLoaded, isStyleLoaded],
+    [mapInstance, isLoaded],
   );
 
   return (
@@ -240,6 +237,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 type MarkerContextValue = {
   marker: MapLibreGL.Marker;
   map: MapLibreGL.Map | null;
+  isAdded: boolean;
 };
 
 const MarkerContext = createContext<MarkerContextValue | null>(null);
@@ -287,6 +285,12 @@ function MapMarker({
   ...markerOptions
 }: MapMarkerProps) {
   const { map } = useMap();
+  const [isAdded, setIsAdded] = useState(false);
+  const handlersRef = useRef({ onClick, onMouseEnter, onMouseLeave });
+
+  useLayoutEffect(() => {
+    handlersRef.current = { onClick, onMouseEnter, onMouseLeave };
+  });
 
   const marker = useMemo(() => {
     const markerInstance = new MapLibreGL.Marker({
@@ -295,9 +299,11 @@ function MapMarker({
       draggable,
     }).setLngLat([longitude, latitude]);
 
-    const handleClick = (e: MouseEvent) => onClick?.(e);
-    const handleMouseEnter = (e: MouseEvent) => onMouseEnter?.(e);
-    const handleMouseLeave = (e: MouseEvent) => onMouseLeave?.(e);
+    const handleClick = (e: MouseEvent) => handlersRef.current.onClick?.(e);
+    const handleMouseEnter = (e: MouseEvent) =>
+      handlersRef.current.onMouseEnter?.(e);
+    const handleMouseLeave = (e: MouseEvent) =>
+      handlersRef.current.onMouseLeave?.(e);
 
     markerInstance.getElement()?.addEventListener("click", handleClick);
     markerInstance
@@ -333,9 +339,11 @@ function MapMarker({
     if (!map) return;
 
     marker.addTo(map);
+    setIsAdded(true);
 
     return () => {
       marker.remove();
+      setIsAdded(false);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -371,7 +379,7 @@ function MapMarker({
   }
 
   return (
-    <MarkerContext.Provider value={{ marker, map }}>
+    <MarkerContext.Provider value={{ marker, map, isAdded }}>
       {children}
     </MarkerContext.Provider>
   );
@@ -416,7 +424,7 @@ function MarkerPopup({
   closeButton = false,
   ...popupOptions
 }: MarkerPopupProps) {
-  const { marker, map } = useMarkerContext();
+  const { marker, map, isAdded } = useMarkerContext();
   const container = useMemo(() => document.createElement("div"), []);
   const prevPopupOptions = useRef(popupOptions);
 
@@ -434,16 +442,24 @@ function MarkerPopup({
   }, []);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !isAdded) return;
 
     popup.setDOMContent(container);
     marker.setPopup(popup);
 
+    // Automatically open the popup when this component mounts
+    if (!popup.isOpen()) {
+      marker.togglePopup();
+    }
+
     return () => {
+      if (popup.isOpen()) {
+        popup.remove();
+      }
       marker.setPopup(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [map, isAdded]);
 
   if (popup.isOpen()) {
     const prev = prevPopupOptions.current;
@@ -496,7 +512,7 @@ function MarkerTooltip({
   className,
   ...popupOptions
 }: MarkerTooltipProps) {
-  const { marker, map } = useMarkerContext();
+  const { marker, map, isAdded } = useMarkerContext();
   const container = useMemo(() => document.createElement("div"), []);
   const prevTooltipOptions = useRef(popupOptions);
 
@@ -513,7 +529,7 @@ function MarkerTooltip({
   }, []);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !isAdded) return;
 
     tooltip.setDOMContent(container);
 
@@ -531,7 +547,7 @@ function MarkerTooltip({
       tooltip.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [map, isAdded]);
 
   if (tooltip.isOpen()) {
     const prev = prevTooltipOptions.current;

@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 
 type NotificationWithUser = {
@@ -218,7 +219,7 @@ export function NotificationsClient({ initialData }: NotificationsClientProps) {
                           {users.map((user) => (
                             <SelectItem key={user.id} value={user.id}>
                               <div className="flex items-center gap-2">
-                                <img
+                                <Image
                                   src={user.avatarUrl}
                                   alt={user.name}
                                   className="h-5 w-5 rounded-full"
@@ -288,7 +289,7 @@ export function NotificationsClient({ initialData }: NotificationsClientProps) {
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <img
+                        <Image
                           src={notification.user.avatarUrl}
                           alt={notification.user.name}
                           className="h-6 w-6 rounded-full object-cover"

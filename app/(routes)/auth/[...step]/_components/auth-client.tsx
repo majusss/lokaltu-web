@@ -10,6 +10,7 @@ import SetPassword from "./set-password";
 import SignIn from "./sign-in";
 import SignUp from "./sign-up";
 import VerifyEmail from "./verify-email";
+import VerifySecondFactor from "./verify-second-factor";
 import Welcome from "./welcome";
 
 import { useRouter } from "next/navigation";
@@ -134,7 +135,12 @@ export default function AuthClient({
     // If we are in the middle of a sync or return-to-app, we let those components finish.
     // However, if we are on a standard page (sign-in, sign-up, etc.) and we are signed in,
     // we must move the user out of here.
-    if (step === "sync" || step === "return-to-app") return;
+    if (
+      step === "sync" ||
+      step === "return-to-app" ||
+      step === "verify-second-factor"
+    )
+      return;
 
     console.log(`[Auth] Client session detected. Native: ${isNativeApp}.`);
     if (isNativeApp) {
@@ -157,6 +163,8 @@ export default function AuthClient({
       return <Welcome />;
     case "enter-password":
       return <EnterPassword />;
+    case "verify-second-factor":
+      return <VerifySecondFactor />;
     case "sso-callback":
       return <AuthenticateWithRedirectCallback />;
     case "return-to-app":

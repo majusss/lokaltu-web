@@ -14,7 +14,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Loader2, Send, Trash2 } from "lucide-react";
+import { Loader2, MessageCircle, Send, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 function timeAgo(date: Date): string {
@@ -88,8 +88,8 @@ export function CommentsSheet({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="border-b pb-3">
-          <DrawerTitle className="text-center">
+        <DrawerHeader className="border-b border-gray-100 pb-5">
+          <DrawerTitle className="text-center text-lg font-black text-gray-900">
             Komentarze{commentCount > 0 && ` (${commentCount})`}
           </DrawerTitle>
         </DrawerHeader>
@@ -97,55 +97,59 @@ export function CommentsSheet({
         {/* Comments list */}
         <div
           ref={listRef}
-          className="flex-1 overflow-y-auto px-4 py-3"
+          className="flex-1 overflow-y-auto px-6 py-4"
           style={{ maxHeight: "55vh" }}
         >
           {isLoadingComments ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-[#59CA34]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#49BF12]" />
             </div>
           ) : comments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-lg font-medium text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50 mb-4">
+                <MessageCircle className="h-8 w-8 text-gray-200" />
+              </div>
+              <p className="text-base font-bold text-gray-900">
                 Brak komentarzy
               </p>
-              <p className="mt-1 text-sm text-gray-300">
-                Bądź pierwszy! Napisz komentarz poniżej.
+              <p className="mt-1 text-sm font-medium text-gray-400">
+                Bądź pierwszy! Napisz co o tym sądzisz.
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
-                  <Image
-                    src={comment.author.avatarUrl}
-                    width={36}
-                    height={36}
-                    alt={comment.author.name}
-                    className="h-9 w-9 shrink-0 rounded-full object-cover"
-                  />
+                  <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-gray-50">
+                    <Image
+                      src={comment.author.avatarUrl}
+                      fill
+                      alt={comment.author.name}
+                      className="object-cover"
+                    />
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-semibold">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-900">
                           {comment.author.name}
                         </span>
-                        <span className="text-xs text-gray-400">
-                          {timeAgo(comment.createdAt)}
+                        <span className="text-[10px] font-bold text-gray-300 uppercase letter-spacing-tight">
+                          • {timeAgo(comment.createdAt)}
                         </span>
                       </div>
                       {(comment.author.id === currentUserId || isAdmin) && (
                         <button
                           onClick={() => handleDelete(comment.id)}
                           disabled={isPending}
-                          className="rounded-full p-1 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-400 disabled:opacity-40"
+                          className="rounded-full p-1 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
                           aria-label="Usuń komentarz"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
-                    <p className="mt-0.5 text-sm leading-snug text-gray-700">
+                    <p className="mt-1 text-sm leading-relaxed font-medium text-gray-700">
                       {comment.content}
                     </p>
                   </div>
@@ -156,8 +160,8 @@ export function CommentsSheet({
         </div>
 
         {/* Comment input */}
-        <div className="border-t px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-          <div className="flex items-center gap-2">
+        <div className="border-t border-gray-100 bg-gray-50/30 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="flex items-center gap-3">
             <input
               ref={inputRef}
               type="text"
@@ -170,13 +174,13 @@ export function CommentsSheet({
                   handleSubmit();
                 }
               }}
-              className="flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm transition-colors outline-none focus:border-[#59CA34] focus:bg-white"
+              className="flex-1 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-medium transition-all outline-none focus:border-[#49BF12] focus:ring-4 focus:ring-[#49BF12]/5"
               disabled={isPending}
             />
             <button
               onClick={handleSubmit}
               disabled={!newComment.trim() || isPending}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#59CA34] text-white transition-all disabled:opacity-40"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#49BF12] text-white shadow-lg shadow-[#49BF12]/20 transition-all active:scale-95 disabled:opacity-40"
             >
               {isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

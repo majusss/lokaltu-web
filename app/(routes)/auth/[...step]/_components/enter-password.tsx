@@ -30,6 +30,8 @@ export default function EnterPassword() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         router.push("/");
+      } else if (result.status === "needs_second_factor") {
+        router.push("/auth/verify-second-factor");
       }
     } catch (err) {
       console.error(err);

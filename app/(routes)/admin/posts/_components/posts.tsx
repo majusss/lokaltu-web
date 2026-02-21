@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import Image from "next/image";
 import {
   forwardRef,
   useImperativeHandle,
@@ -162,7 +163,7 @@ export const Posts = forwardRef<PostsRef, PostsProps>(
               <Card key={post.id}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <img
+                    <Image
                       src={post.author.avatarUrl}
                       alt={post.author.name}
                       className="h-10 w-10 rounded-full object-cover"

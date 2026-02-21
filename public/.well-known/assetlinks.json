@@ -1,8 +1,0 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.use_as_origin"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "pl.lokaltu.android",
-    "sha256_cert_fingerprints": ["67:0D:B8:0D:48:F2:57:F4:62:A2:2F:6A:0E:37:D1:42:6F:A2:D9:D3:81:20:3A:97:D7:6B:5B:C1:CF:C8:98:74"]
-  }
-}]

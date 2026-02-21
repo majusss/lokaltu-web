@@ -81,6 +81,7 @@ model User {
   email            String
   bagId            String?
   lokaltuPoints    Int      @default(0)
+  co2Saved         Int      @default(0)
   avatarUrl        String
   pushTokens       String[]
   profileCompleted Boolean  @default(false)

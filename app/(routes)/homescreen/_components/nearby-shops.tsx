@@ -1,11 +1,11 @@
 "use client";
 
 import { getMapPlaces } from "@/app/actions/places";
-import dummyshop from "@/app/assets/dummy_shop.png";
 import poins from "@/app/assets/points.svg";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { Loader2, MapPin } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type MapPlace = {
@@ -52,11 +52,14 @@ export function NearbyShops() {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
     getMapPlaces().then((data) => {
       setPlaces(data);
       setFetching(false);
     });
+    return () => clearTimeout(timer);
   }, []);
 
   const nearbyPlaces = useMemo(() => {
@@ -94,30 +97,23 @@ export function NearbyShops() {
       </h2>
       <div className="mt-3 space-y-4">
         {nearbyPlaces.map((shop) => (
-          <div
-            className="group relative flex h-47 w-full flex-col justify-between overflow-hidden rounded-3xl"
+          <Link
+            href={`/homescreen/map?lat=${shop.latitude}&lng=${shop.longitude}&id=${shop.id}`}
+            className="group relative flex h-47 w-full flex-col justify-between overflow-hidden rounded-2xl bg-[#FFF4E6] shadow-md transition-transform active:scale-95"
             key={shop.id}
           >
-            {shop.image && CDN_URL ? (
-              <img
+            {/* Background Image & Gradient */}
+            <div className="absolute inset-0">
+              <Image
                 src={`${CDN_URL}/${shop.image}`}
                 alt={shop.name}
-                className="absolute -z-10 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-            ) : (
-              <Image
-                src={dummyshop}
-                alt={shop.name}
-                width={353}
-                height={188}
-                className="absolute -z-10 h-full w-full rounded-3xl object-cover"
-              />
-            )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            </div>
 
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 -z-5 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-            <div className="m-4 flex items-center justify-between">
+            <div className="relative z-10 m-4 flex items-center justify-between">
               <div className="inline-flex items-center">
                 <Image
                   src={poins}
@@ -140,7 +136,7 @@ export function NearbyShops() {
               )}
             </div>
 
-            <div className="m-4">
+            <div className="relative z-10 m-4">
               <p className="line-clamp-2 text-2xl leading-tight font-black text-[#FFF4E6]">
                 {shop.name}
               </p>
@@ -149,7 +145,7 @@ export function NearbyShops() {
                 <span className="truncate text-xs">{shop.address}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
 
         {nearbyPlaces.length === 0 && !fetching && (

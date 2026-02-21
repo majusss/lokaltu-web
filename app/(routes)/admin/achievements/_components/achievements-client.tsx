@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useState, useTransition } from "react";
 
 type AchievementWithCount = {
@@ -271,7 +272,7 @@ export function AchievementsClient({ initialData }: AchievementsClientProps) {
                     className={isPending ? "opacity-50" : ""}
                   >
                     <TableCell>
-                      <img
+                      <Image
                         src={achievement.iconUrl}
                         alt={achievement.name}
                         className="h-10 w-10 rounded-md object-cover"

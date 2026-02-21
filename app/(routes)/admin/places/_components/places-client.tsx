@@ -50,6 +50,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState, useTransition } from "react";
 
 interface PlacesClientProps {
@@ -385,7 +386,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                     className={isPending ? "opacity-50" : ""}
                   >
                     <TableCell>
-                      <img
+                      <Image
                         src={
                           place.image
                             ? `${process.env.NEXT_PUBLIC_CDN_URL}/${place.image}`

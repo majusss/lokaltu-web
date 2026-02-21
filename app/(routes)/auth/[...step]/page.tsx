@@ -21,7 +21,11 @@ export default async function AuthPage({
   const userAgent = (await headers()).get("user-agent") || "";
   const isNativeApp = userAgent.includes("Lokaltu-Native-Android");
 
-  if (user && currentStep !== "return-to-app") {
+  if (
+    user &&
+    currentStep !== "return-to-app" &&
+    currentStep !== "verify-second-factor"
+  ) {
     // If we are already in the app, just go home.
     // If we are in external browser, go to bridge to "pull" user into app.
     if (isNativeApp) {

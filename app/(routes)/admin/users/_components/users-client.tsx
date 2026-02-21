@@ -39,6 +39,7 @@ import {
   ShieldOff,
   Trash2,
 } from "lucide-react";
+import Image from "next/image";
 import { useState, useTransition } from "react";
 
 type UserWithCounts = {
@@ -166,7 +167,7 @@ export function UsersClient({ initialData, currentUserId }: UsersClientProps) {
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <img
+                      <Image
                         src={user.avatarUrl}
                         alt={user.name}
                         className="h-8 w-8 rounded-full object-cover"
