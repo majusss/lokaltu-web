@@ -12,8 +12,7 @@ const buttonVariants = cva(
         default: "bg-main rounded-full text-white shadow-lg shadow-primary/10",
         premium:
           "bg-main text-white rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]",
-        google:
-          "bg-white text-neutral-800 rounded-2xl shadow-md border border-neutral-200 hover:bg-neutral-50 hover:shadow-lg active:scale-[0.98]",
+
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 rounded-full",
         outline:
