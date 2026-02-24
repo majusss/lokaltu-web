@@ -56,12 +56,6 @@ export default function EnterPassword() {
         className="mt-2"
       />
 
-      <div className="flex justify-start px-1">
-        <button className="text-primary text-sm font-bold hover:underline">
-          Nie pamiętasz hasła?
-        </button>
-      </div>
-
       <Button
         variant="premium"
         size="lg"

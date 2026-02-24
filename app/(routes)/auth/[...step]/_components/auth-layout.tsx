@@ -22,7 +22,7 @@ export function AuthLayout({
     <div
       className={cn("anim-fade-in-up flex w-full flex-col gap-1", className)}
     >
-      <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 drop-shadow-sm">
+      <h1 className="text-4xl font-semibold tracking-tight text-neutral-900 drop-shadow-sm">
         {title}
       </h1>
       <p className="mt-2 mb-8 text-lg leading-relaxed font-medium text-neutral-500">
