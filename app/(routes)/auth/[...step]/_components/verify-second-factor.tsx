@@ -91,27 +91,6 @@ export default function VerifySecondFactor() {
     }
   };
 
-  const handleResend = async () => {
-    if (!isLoaded || !signIn) return;
-    setError("");
-    try {
-      if (signIn.supportedSecondFactors) {
-        const factor = signIn.supportedSecondFactors.find(
-          (f) => f.strategy === "email_code",
-        );
-        if (factor && "emailAddressId" in factor) {
-          await signIn.prepareSecondFactor({
-            strategy: "email_code",
-            emailAddressId: factor.emailAddressId as string,
-          });
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Nie udało się wysłać kodu ponownie.");
-    }
-  };
-
   const isCodeComplete = code.every((digit) => digit !== "");
 
   return (
@@ -152,16 +131,6 @@ export default function VerifySecondFactor() {
         {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
         Weryfikuj
       </Button>
-
-      <p className="mt-6 text-center text-sm font-medium text-neutral-500">
-        Nie otrzymałeś kodu?{" "}
-        <button
-          onClick={handleResend}
-          className="text-primary font-bold hover:underline"
-        >
-          Wyślij ponownie
-        </button>
-      </p>
     </AuthLayout>
   );
 }

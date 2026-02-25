@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { RotateCcw, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { ScanLayout } from "../scan-layout";
 
 interface ResultStepProps {
@@ -67,7 +67,6 @@ export default function ResultStep({
     <ScanLayout
       title="Wynik analizy"
       subtitle="Oto co nasze AI sądzi o Twoich zakupach."
-      showBack={false}
     >
       <div className="flex flex-col items-center gap-8 rounded-[2.5rem] border border-neutral-100 bg-white p-10 shadow-xl shadow-neutral-100/30">
         <ConfidenceRing value={confidence} />
@@ -97,12 +96,7 @@ export default function ResultStep({
         </div>
       </div>
 
-      <Button
-        variant={isPositive ? "premium" : "outline"}
-        onClick={onReset}
-        className="mt-4 w-full rounded-2xl border-2"
-      >
-        <RotateCcw className="mr-2 h-5 w-5" />
+      <Button variant="premium" onClick={onReset} className="mt-4 w-full">
         {isPositive ? "Zakończ i wróć" : "Spróbuj ponownie"}
       </Button>
     </ScanLayout>

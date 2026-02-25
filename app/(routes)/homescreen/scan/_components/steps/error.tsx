@@ -14,8 +14,6 @@ export default function ErrorStep({ message, onRetry }: ErrorStepProps) {
     <ScanLayout
       title="Wystąpił błąd"
       subtitle="Coś poszło nie tak podczas skanowania. Spróbujmy jeszcze raz."
-      showBack={true}
-      onBack={onRetry}
     >
       <div className="flex flex-col items-center gap-8 rounded-[2rem] border border-red-100 bg-red-50/30 p-10 shadow-lg shadow-red-100/10">
         <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-sm ring-8 ring-red-100/50">

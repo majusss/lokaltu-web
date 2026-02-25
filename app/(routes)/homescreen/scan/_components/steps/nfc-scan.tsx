@@ -30,7 +30,6 @@ export default function NfcScanStep() {
     <ScanLayout
       title="Przytknij torbę"
       subtitle="Szukamy Twojego tagu NFC... Prosimy nie odsuwać telefonu."
-      showBack={false}
     >
       <div className="flex flex-col items-center justify-center py-10">
         <NfcPulse />

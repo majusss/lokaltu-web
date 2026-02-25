@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AlertCircle, ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 
 interface ScanLayoutProps {
   title: string;
@@ -11,8 +9,6 @@ interface ScanLayoutProps {
   children: React.ReactNode;
   error?: string;
   className?: string;
-  onBack?: () => void;
-  showBack?: boolean;
 }
 
 export function ScanLayout({
@@ -21,26 +17,9 @@ export function ScanLayout({
   children,
   error,
   className,
-  onBack,
-  showBack = true,
 }: ScanLayoutProps) {
-  const router = useRouter();
-
   return (
     <div className={cn("anim-fade-in-up flex w-full flex-col", className)}>
-      <div className="mb-8 flex items-center justify-between">
-        {showBack && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onBack || (() => router.back())}
-            className="h-12 w-12 rounded-2xl bg-white/50 shadow-sm backdrop-blur-sm"
-          >
-            <ArrowLeft className="h-6 w-6 text-neutral-600" />
-          </Button>
-        )}
-      </div>
-
       <div className="mb-8">
         <h1 className="text-4xl font-black tracking-tight text-neutral-900 drop-shadow-sm">
           {title}
