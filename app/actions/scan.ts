@@ -17,9 +17,7 @@ export async function verifyBag(
   if (!userDb) return { ok: false, error: "Nie znaleziono konta." };
   if (!userDb.bagId) return { ok: false, error: "Brak przypisanej torby." };
 
-  if (
-    userDb.bagId.toLowerCase().trim() !== tagId.toLowerCase().trim()
-  ) {
+  if (userDb.bagId.toLowerCase().trim() !== tagId.toLowerCase().trim()) {
     return { ok: false, error: "To nie jest Twoja torba." };
   }
 
@@ -83,7 +81,7 @@ Respond ONLY with a valid JSON object in this exact format:
     throw new Error(`OpenRouter error ${response.status}: ${text}`);
   }
 
-  const json = await response.json() as {
+  const json = (await response.json()) as {
     choices: { message: { content: string } }[];
   };
   const raw = json.choices[0]?.message?.content ?? "";
