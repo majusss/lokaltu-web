@@ -43,13 +43,8 @@ function StatsBar({
           <Image src={ecology} alt="ecology icon" width={26} height={26} />
           {co2Saved.toFixed(1)} kg CO₂
         </div>
-        <div className="border-l border-white/20" />
-        <div className="inline-flex items-center gap-1.5 px-1 text-sm">
-          <span className="font-bold">{bagsSaved}</span> torby
-        </div>
       </div>
 
-      {/* Small level badge just to keep progress info visible but not invasive */}
       <div className="mx-6 -mt-3 mb-2 rounded-xl bg-white/20 px-4 py-2 text-center text-[11px] font-bold text-white backdrop-blur-md">
         Poziom {level.level}: {level.name} (
         {getProgressToNextLevel(lokaltuPoints)}%)

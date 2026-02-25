@@ -47,21 +47,30 @@ export async function analyzeReceipt(imageBase64: string): Promise<{
         content: [
           {
             type: "text",
-            text: `Jesteś ekspertem od weryfikacji zakupów spożywczych. Twoim zadaniem jest ocena zdjęcia pod kątem autentyczności oraz wielkości zakupów.
+            text: `Jesteś surowym ekspertem ds. wykrywania oszustw w procesie weryfikacji zakupów spożywczych. Twoim zadaniem jest bezlitosna ocena, czy zdjęcie PRZEDSTAWIA PRAWDZIWE, ŚWIEŻO ZROBIONE ZAKUPY SPOŻYWCZE.
 
-KRYTERIA OCENY (BRAĆ POD UWAGĘ ILOŚĆ PRODUKTÓW I STOPIEŃ WYPEŁNIENIA KADRU/TORBY):
-1. Small (Małe zakupy): 1-2 produkty (np. tylko chleb, napój, słoik miodu). Opis: "Szybki wyskok po pieczywo".
-2. Medium (Średnie zakupy): 3-5 produktów lub wypełniona połowa kadru/torby. Opis: "Obiad dla rodziny".
-3. Large (Duże zakupy): Pełna torba, bardzo dużo produktów, całkowicie wypełniony kadr. Opis: "Zapasy na tydzień".
+BĄDŹ EKSTREMALNIE SCEPTYCZNY. Jeśli masz choć cień wątpliwości, obniż ocenę confidence poniżej 50.
 
-OCENA PEWNOŚCI (confidence):
-- Określ pewność (0-100%), że zdjęcie przedstawia prawdziwe, świeżo zrobione zakupy (nie jest to zrzut ekranu, stare zdjęcie ani ustawiona scena).
+KRYTERIA ODRZUCENIA (Confidence < 30%):
+- Zdjęcie przedstawia przedmioty codziennego użytku NIEBĘDĄCE jedzeniem (elektronika, ubrania, kosmetyki, narzędzia).
+- Zdjęcie jest zrzutem ekranu, zdjęciem innego ekranu lub starą fotografią.
+- Zdjęcie jest rozmazane, nieczytelne lub przedstawia losowe przedmioty.
+- Scena wygląda na ustawioną (np. jeden owoc na środku dywanu).
+
+KRYTERIA AKCEPTACJI (Confidence > 70%):
+- Wyraźnie widoczne produkty spożywcze: owoce, warzywa, pieczywo, nabiał, napoje w opakowaniach handlowych.
+- Produkty znajdują się w torbie zakupowej lub typowym otoczeniu (kuchnia, blat, sklep).
+
+ROZMIAR ZAKUPÓW (size):
+1. Small: 1-2 produkty (np. chleb i mleko).
+2. Medium: 3-5 produktów lub połowa torby.
+3. Large: Pełna torba, obfite zakupy.
 
 Odpowiedz WYŁĄCZNIE w formacie JSON:
 {
   "confidence": <liczba 0-100>,
   "size": "small" | "medium" | "large",
-  "reasoning": "<jedno zdanie po polsku uzasadniające werdykt i rozmiar>"
+  "reasoning": "<jedno zdanie po polsku uzasadniające surowy werdykt>"
 }`,
           },
           {
