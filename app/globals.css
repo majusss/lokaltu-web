@@ -158,6 +158,15 @@
     animation: scrollUp 30s linear infinite;
   }
 
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .bg-main {
     background: linear-gradient(220.65deg, #f2da00 7.35%, #44d021 85.94%);
   }

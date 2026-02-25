@@ -22,6 +22,7 @@ const buttonVariants = cva(
         ghost:
           "text-muted-foreground hover:text-foreground font-semibold text-lg",
         link: "text-primary underline-offset-4 hover:underline",
+        tile: "bg-neutral-50 border border-neutral-100 rounded-2xl text-neutral-800 hover:bg-neutral-100/50 hover:border-neutral-200 shadow-sm active:scale-[0.98] transition-all",
       },
       size: {
         default: "h-14 px-8 py-2 text-xl",
