@@ -68,7 +68,6 @@ export default function SignUp() {
 
       <Button
         variant="premium"
-        size="lg"
         onClick={handleEmailSubmit}
         disabled={!email || loading}
         className="mt-2"
