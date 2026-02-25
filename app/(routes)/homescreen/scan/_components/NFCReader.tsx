@@ -1,7 +1,8 @@
 "use client";
 
-import { analyzeReceipt, verifyBag } from "@/app/actions/scan";
+import { analyzeReceipt, awardPoints, verifyBag } from "@/app/actions/scan";
 import { useCamera } from "@/lib/hooks/use-camera";
+import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { useNfc } from "@/lib/hooks/use-nfc";
 import { useCallback, useState } from "react";
 
@@ -23,11 +24,20 @@ type Step =
 interface ScanResult {
   confidence: number;
   reasoning: string;
+  size?: "small" | "medium" | "large";
+  pointsData?: {
+    points: number;
+    bonus: number;
+    total: number;
+    isNewPlace: boolean;
+    placeName?: string;
+  };
 }
 
 export default function NFCReader() {
   const { startScan } = useNfc();
   const { takePicture } = useCamera();
+  const { latitude, longitude } = useGeolocation();
 
   const [step, setStep] = useState<Step>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -64,12 +74,26 @@ export default function NFCReader() {
       setStep("analyzing");
 
       const aiResult = await analyzeReceipt(base64);
-      setResult(aiResult);
+
+      let pointsData;
+      // Threshold for awarding points: confidence >= 70%
+      if (aiResult.confidence >= 70) {
+        pointsData = await awardPoints({
+          size: aiResult.size,
+          lat: latitude ?? undefined,
+          lng: longitude ?? undefined,
+        });
+      }
+
+      setResult({
+        ...aiResult,
+        pointsData,
+      });
       setStep("result");
     } catch (e) {
       handleError(e instanceof Error ? e.message : "Błąd aparatu lub AI.");
     }
-  }, [takePicture, handleError]);
+  }, [takePicture, handleError, latitude, longitude]);
 
   const handleReset = () => {
     setStep("idle");
@@ -95,6 +119,7 @@ export default function NFCReader() {
         <ResultStep
           confidence={result.confidence}
           reasoning={result.reasoning}
+          pointsData={result.pointsData}
           onReset={handleReset}
         />
       ) : (

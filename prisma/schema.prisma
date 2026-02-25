@@ -30,7 +30,8 @@ model Place {
   image       String? // URL into R2 bucket
   description String?
 
-  savedBy User[] @relation("SavedPlaces")
+  savedBy   User[]     @relation("SavedPlaces")
+  purchases Purchase[]
 
   @@index([latitude, longitude])
 }
@@ -81,7 +82,8 @@ model User {
   email            String
   bagId            String?
   lokaltuPoints    Int      @default(0)
-  co2Saved         Int      @default(0)
+  co2Saved         Float    @default(0) // Changed to Float for precision
+  bagsSaved        Int      @default(0)
   avatarUrl        String
   pushTokens       String[]
   profileCompleted Boolean  @default(false)
@@ -91,6 +93,43 @@ model User {
   comments      Comment[]
   notifications Notification[]
   admin         Admin?
-  createdPlaces Place[]        @relation("CreatedPlaces")
-  savedPlaces   Place[]        @relation("SavedPlaces")
+  createdPlaces Place[]                 @relation("CreatedPlaces")
+  savedPlaces   Place[]                 @relation("SavedPlaces")
+  purchases     Purchase[]
+  challenges    UserChallengeProgress[]
+}
+
+model Challenge {
+  id          String                  @id
+  name        String
+  description String
+  goal        Int
+  points      Int
+  badgeName   String?
+  dependency  String? // ID of challenge that must be completed first
+  users       UserChallengeProgress[]
+}
+
+model UserChallengeProgress {
+  userId      String
+  challengeId String
+  user        User      @relation(fields: [userId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  current     Int       @default(0)
+  isCompleted Boolean   @default(false)
+  updatedAt   DateTime  @updatedAt
+
+  @@id([userId, challengeId])
+}
+model Purchase {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  placeId   String?
+  place     Place?   @relation(fields: [placeId], references: [id])
+  points    Int
+  size      String // small, medium, large
+  co2Saved  Float    @default(0.8)
+  bagsSaved Int      @default(1)
 }

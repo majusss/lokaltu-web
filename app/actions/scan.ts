@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
+import { checkChallenges } from "./challenges";
 
 /**
  * Verifies that the scanned NFC tag belongs to the current user.
@@ -26,31 +28,41 @@ export async function verifyBag(
 
 /**
  * Sends a base64 image to OpenRouter AI and returns how confident the AI is
- * that the photo shows fresh (just-done) grocery shopping.
+ * that the photo shows fresh (just-done) grocery shopping, along with the size of the purchase.
  */
 export async function analyzeReceipt(imageBase64: string): Promise<{
   confidence: number; // 0-100
   reasoning: string;
+  size: "small" | "medium" | "large";
 }> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey)
     throw new Error("Brak klucza API OpenRouter (OPENROUTER_API_KEY).");
 
   const body = {
-    model: "qwen/qwen3-vl-235b-a22b-thinking",
+    model: "google/gemini-2.0-flash-001",
     messages: [
       {
         role: "user",
         content: [
           {
             type: "text",
-            text: `You are a receipt and shopping verification assistant.
-Look at the attached photo and determine how confident you are (0–100%) that:
-1. The photo shows groceries or shopping items that were just purchased (fresh, recent purchase).
-2. The items appear real and not staged.
+            text: `Jesteś ekspertem od weryfikacji zakupów spożywczych. Twoim zadaniem jest ocena zdjęcia pod kątem autentyczności oraz wielkości zakupów.
 
-Respond ONLY with a valid JSON object in this exact format:
-{"confidence": <number 0-100>, "reasoning": "<one sentence in Polish explaining your verdict>"}`,
+KRYTERIA OCENY (BRAĆ POD UWAGĘ ILOŚĆ PRODUKTÓW I STOPIEŃ WYPEŁNIENIA KADRU/TORBY):
+1. Small (Małe zakupy): 1-2 produkty (np. tylko chleb, napój, słoik miodu). Opis: "Szybki wyskok po pieczywo".
+2. Medium (Średnie zakupy): 3-5 produktów lub wypełniona połowa kadru/torby. Opis: "Obiad dla rodziny".
+3. Large (Duże zakupy): Pełna torba, bardzo dużo produktów, całkowicie wypełniony kadr. Opis: "Zapasy na tydzień".
+
+OCENA PEWNOŚCI (confidence):
+- Określ pewność (0-100%), że zdjęcie przedstawia prawdziwe, świeżo zrobione zakupy (nie jest to zrzut ekranu, stare zdjęcie ani ustawiona scena).
+
+Odpowiedz WYŁĄCZNIE w formacie JSON:
+{
+  "confidence": <liczba 0-100>,
+  "size": "small" | "medium" | "large",
+  "reasoning": "<jedno zdanie po polsku uzasadniające werdykt i rozmiar>"
+}`,
           },
           {
             type: "image_url",
@@ -93,6 +105,126 @@ Respond ONLY with a valid JSON object in this exact format:
   const parsed = JSON.parse(match[0]) as {
     confidence: number;
     reasoning: string;
+    size: "small" | "medium" | "large";
   };
-  return { confidence: parsed.confidence, reasoning: parsed.reasoning };
+  return {
+    confidence: parsed.confidence,
+    reasoning: parsed.reasoning,
+    size: parsed.size || "small",
+  };
+}
+
+/**
+ * Awards points to the user based on the purchase size and first-time visit bonus.
+ */
+export async function awardPoints(data: {
+  size: "small" | "medium" | "large";
+  lat?: number;
+  lng?: number;
+}): Promise<{
+  points: number;
+  bonus: number;
+  total: number;
+  isNewPlace: boolean;
+  placeName?: string;
+  co2Saved: number;
+  bagsSaved: number;
+}> {
+  const user = await currentUser();
+  if (!user) throw new Error("Nie zalogowany.");
+
+  const pointsMap = {
+    small: 15,
+    medium: 30,
+    large: 50,
+  };
+
+  const basePoints = pointsMap[data.size];
+  let bonus = 0;
+  let isNewPlace = false;
+  let closestPlaceId: string | null = null;
+  let placeName: string | undefined = undefined;
+
+  // 1. Find the closest place if coordinates are provided
+  if (data.lat && data.lng) {
+    // Find places within ~500m (roughly 0.005 degrees)
+    const places = await prisma.place.findMany({
+      where: {
+        latitude: { gte: data.lat - 0.005, lte: data.lat + 0.005 },
+        longitude: { gte: data.lng - 0.005, lte: data.lng + 0.005 },
+      },
+    });
+
+    if (places.length > 0) {
+      // Find the absolute closest one
+      const sorted = places.sort((a, b) => {
+        const distA = Math.hypot(
+          a.latitude - data.lat!,
+          a.longitude - data.lng!,
+        );
+        const distB = Math.hypot(
+          b.latitude - data.lat!,
+          b.longitude - data.lng!,
+        );
+        return distA - distB;
+      });
+
+      closestPlaceId = sorted[0].id;
+      placeName = sorted[0].name;
+
+      // 2. Check if user shopped here before
+      const previousPurchase = await prisma.purchase.findFirst({
+        where: {
+          userId: user.id,
+          placeId: closestPlaceId,
+        },
+      });
+
+      if (!previousPurchase) {
+        bonus = 10;
+        isNewPlace = true;
+      }
+    }
+  }
+
+  const totalPoints = basePoints + bonus;
+  const co2Amount = 0.8; // Standard 0.8kg per visit
+  const bagsSavedValue = data.size === "small" ? 1 : 2; // 1 for small, 2 for med/large
+
+  // 3. Perform atomic update
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lokaltuPoints: { increment: totalPoints },
+        co2Saved: { increment: co2Amount },
+        bagsSaved: { increment: bagsSavedValue },
+      },
+    }),
+    prisma.purchase.create({
+      data: {
+        userId: user.id,
+        placeId: closestPlaceId,
+        points: totalPoints,
+        size: data.size,
+        co2Saved: co2Amount,
+        bagsSaved: bagsSavedValue,
+      },
+    }),
+  ]);
+
+  // Handle challenges
+  await checkChallenges(user.id);
+
+  revalidatePath("/(routes)/homescreen", "layout");
+
+  return {
+    points: basePoints,
+    bonus,
+    total: totalPoints,
+    isNewPlace: isNewPlace,
+    placeName: placeName,
+    co2Saved: co2Amount,
+    bagsSaved: bagsSavedValue,
+  };
 }
