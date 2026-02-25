@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "pnpm prisma generate",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "pnpm prisma generate && pnpm prisma db push && next build",
     "start": "next start",
     "lint": "eslint",
     "dev:syncdb": "pnpm prisma db push && pnpm prisma generate"

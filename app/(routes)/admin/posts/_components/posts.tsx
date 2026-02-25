@@ -167,6 +167,8 @@ export const Posts = forwardRef<PostsRef, PostsProps>(
                       src={post.author.avatarUrl}
                       alt={post.author.name}
                       className="h-10 w-10 rounded-full object-cover"
+                      width={40}
+                      height={40}
                     />
                     <div>
                       <CardTitle>{post.title}</CardTitle>

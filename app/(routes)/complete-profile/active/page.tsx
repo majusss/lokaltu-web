@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function ActiveBagPage() {
@@ -17,11 +16,7 @@ export default function ActiveBagPage() {
 
       <div className="mx-auto flex max-w-sm flex-col gap-4">
         <Button asChild variant="premium">
-          <Link href="/">
-            <span>Rozpocznij przygodę</span>
-            <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
-            <div className="group-hover:animate-shimmer pointer-events-none absolute inset-0 skew-x-[-20deg] bg-linear-to-r from-transparent via-white/10 to-transparent"></div>
-          </Link>
+          <Link href="/">Rozpocznij przygodę</Link>
         </Button>
       </div>
     </div>

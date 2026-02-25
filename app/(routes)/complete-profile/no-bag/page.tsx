@@ -41,14 +41,8 @@ export default function NoBagPage() {
         variant="premium"
         className="mx-auto w-full"
       >
-        {isSkipping ? (
-          <>
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Przetwarzanie...</span>
-          </>
-        ) : (
-          "Przejdź do strony głównej"
-        )}
+        {isSkipping && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+        Przejdź do strony głównej
       </Button>
     </div>
   );

@@ -276,6 +276,8 @@ export function AchievementsClient({ initialData }: AchievementsClientProps) {
                         src={achievement.iconUrl}
                         alt={achievement.name}
                         className="h-10 w-10 rounded-md object-cover"
+                        width={40}
+                        height={40}
                       />
                     </TableCell>
                     <TableCell className="font-medium">

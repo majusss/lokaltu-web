@@ -32,9 +32,13 @@ export default function SetPassword() {
         await setActive({ session: completeSignUp.createdSessionId });
         router.push("/complete-profile");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Nie udało się ustawić hasła. Spróbuj ponownie.");
+      const message =
+        err.errors?.[0]?.longMessage ||
+        err.errors?.[0]?.message ||
+        "Nie udało się ustawić hasła. Spróbuj ponownie.";
+      setError(message);
       setLoading(false);
     }
   };
@@ -75,7 +79,6 @@ export default function SetPassword() {
 
       <Button
         variant="premium"
-        size="lg"
         onClick={handleSubmit}
         disabled={!isValid || loading}
         className="mt-6"

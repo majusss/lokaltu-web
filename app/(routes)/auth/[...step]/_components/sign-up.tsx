@@ -79,13 +79,21 @@ export default function SignUp() {
 
       <p className="mt-6 px-4 text-center text-xs leading-relaxed font-medium text-neutral-400">
         Tworząc konto akceptujesz{" "}
-        <span className="cursor-pointer text-neutral-800 underline">
+        <Link
+          href="/regulamin.pdf"
+          target="_blank"
+          className="cursor-pointer text-neutral-800 underline"
+        >
           Regulamin
-        </span>{" "}
+        </Link>{" "}
         i{" "}
-        <span className="cursor-pointer text-neutral-800 underline">
+        <Link
+          href="/polityka-prywatnosci.pdf"
+          target="_blank"
+          className="cursor-pointer text-neutral-800 underline"
+        >
           Politykę prywatności
-        </span>
+        </Link>
       </p>
 
       <div className="mt-12 flex justify-center">

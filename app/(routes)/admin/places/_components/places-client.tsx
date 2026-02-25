@@ -394,6 +394,8 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                         }
                         alt={place.name}
                         className="h-12 w-12 rounded-md object-cover"
+                        width={48}
+                        height={48}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{place.name}</TableCell>

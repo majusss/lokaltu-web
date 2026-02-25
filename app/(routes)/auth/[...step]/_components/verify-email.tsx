@@ -97,7 +97,6 @@ export default function VerifyEmail() {
 
       <Button
         variant="premium"
-        size="lg"
         onClick={handleVerify}
         disabled={!isCodeComplete || loading}
         className="mt-6"
@@ -105,13 +104,6 @@ export default function VerifyEmail() {
         {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
         Weryfikuj
       </Button>
-
-      <p className="mt-6 text-center text-sm font-medium text-neutral-500">
-        Nie otrzymałeś kodu?{" "}
-        <button className="text-primary font-bold hover:underline">
-          Wyślij ponownie
-        </button>
-      </p>
     </AuthLayout>
   );
 }

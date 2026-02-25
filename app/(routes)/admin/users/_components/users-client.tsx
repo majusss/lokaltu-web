@@ -171,6 +171,8 @@ export function UsersClient({ initialData, currentUserId }: UsersClientProps) {
                         src={user.avatarUrl}
                         alt={user.name}
                         className="h-8 w-8 rounded-full object-cover"
+                        width={64}
+                        height={64}
                       />
                       <span className="font-medium">{user.name}</span>
                     </div>

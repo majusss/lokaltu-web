@@ -223,6 +223,8 @@ export function NotificationsClient({ initialData }: NotificationsClientProps) {
                                   src={user.avatarUrl}
                                   alt={user.name}
                                   className="h-5 w-5 rounded-full"
+                                  width={20}
+                                  height={20}
                                 />
                                 {user.name}
                               </div>
@@ -293,6 +295,8 @@ export function NotificationsClient({ initialData }: NotificationsClientProps) {
                           src={notification.user.avatarUrl}
                           alt={notification.user.name}
                           className="h-6 w-6 rounded-full object-cover"
+                          width={24}
+                          height={24}
                         />
                         <span className="font-medium">
                           {notification.user.name}

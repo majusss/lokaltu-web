@@ -26,8 +26,6 @@ export default async function AuthPage({
     currentStep !== "return-to-app" &&
     currentStep !== "verify-second-factor"
   ) {
-    // If we are already in the app, just go home.
-    // If we are in external browser, go to bridge to "pull" user into app.
     if (isNativeApp) {
       return redirect("/", RedirectType.replace);
     }

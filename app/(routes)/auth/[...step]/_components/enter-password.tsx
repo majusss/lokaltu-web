@@ -33,9 +33,13 @@ export default function EnterPassword() {
       } else if (result.status === "needs_second_factor") {
         router.push("/auth/verify-second-factor");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Nieprawidłowe hasło. Spróbuj ponownie.");
+      const message =
+        err.errors?.[0]?.longMessage ||
+        err.errors?.[0]?.message ||
+        "Nieprawidłowe hasło. Spróbuj ponownie.";
+      setError(message);
       setLoading(false);
     }
   };
@@ -58,7 +62,6 @@ export default function EnterPassword() {
 
       <Button
         variant="premium"
-        size="lg"
         onClick={handleSubmit}
         disabled={!password || loading}
         className="mt-6"

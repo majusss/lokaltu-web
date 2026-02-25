@@ -21,12 +21,16 @@ export default function Welcome() {
 
     try {
       await signUp.update({
-        username: name,
+        firstName: name,
       });
       router.push("/auth/set-password");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Wystąpił błąd podczas zapisywania Twojego imienia.");
+      const message =
+        err.errors?.[0]?.longMessage ||
+        err.errors?.[0]?.message ||
+        "Wystąpił błąd podczas zapisywania Twojego imienia.";
+      setError(message);
       setLoading(false);
     }
   };
@@ -48,7 +52,6 @@ export default function Welcome() {
 
       <Button
         variant="premium"
-        size="lg"
         onClick={handleSubmit}
         disabled={!name || loading}
         className="mt-6"

@@ -145,7 +145,6 @@ export default function VerifySecondFactor() {
 
       <Button
         variant="premium"
-        size="lg"
         onClick={handleVerify}
         disabled={!isCodeComplete || loading}
         className="mt-6"
