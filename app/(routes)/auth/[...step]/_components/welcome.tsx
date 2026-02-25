@@ -21,7 +21,7 @@ export default function Welcome() {
 
     try {
       await signUp.update({
-        firstName: name,
+        username: name,
       });
       router.push("/auth/set-password");
     } catch (err) {

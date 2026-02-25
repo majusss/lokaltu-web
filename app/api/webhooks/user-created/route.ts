@@ -9,7 +9,10 @@ export async function POST(req: Request) {
     data: {
       id: user.id,
       email: user.emailAddresses[0].emailAddress,
-      name: user.firstName as string,
+      name:
+        user.firstName ||
+        user.username ||
+        user.emailAddresses[0].emailAddress.split("@")[0],
       avatarUrl: user.imageUrl,
     },
   });
