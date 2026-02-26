@@ -1,5 +1,4 @@
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 import { amIAdmin } from "@/app/actions/admin";
@@ -45,7 +44,7 @@ function StatsBar({
         </div>
       </div>
 
-      <div className="mx-6 -mt-3 mb-2 rounded-xl bg-white/20 px-4 py-2 text-center text-[11px] font-bold text-white backdrop-blur-md">
+      <div className="-mt-3 bg-white/20 px-4 pt-2 pb-6 text-center text-[11px] font-bold text-white backdrop-blur-md">
         Poziom {level.level}: {level.name} (
         {getProgressToNextLevel(lokaltuPoints)}%)
       </div>
@@ -54,36 +53,24 @@ function StatsBar({
 }
 
 function UserChallanges({ challenges }: { challenges: any[] }) {
-  if (challenges.length === 0) return null;
+  const currentChallenges = challenges.filter((ch) => !ch.isCompleted);
+  if (currentChallenges.length === 0) return null;
 
   return (
     <div className="pt-2">
       <div className="mb-4 flex items-center justify-between px-1.5">
         <h2 className="text-xl font-bold text-gray-900">Twoje wyzwania</h2>
-        <span className="text-xs font-bold text-[#49BF12]">Wszystkie</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {challenges.slice(0, 4).map((ch) => (
+      <div className="scrollbar-none -mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4">
+        {currentChallenges.map((ch) => (
           <div
             key={ch.challengeId}
-            className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+            className="group flex w-[85vw] flex-none snap-center flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md sm:w-[320px]"
           >
-            <div
-              className={cn(
-                "w-fit rounded-lg px-2.5 py-1",
-                ch.isCompleted ? "bg-[#49BF12]/10" : "bg-[#FFF4E6]",
-              )}
-            >
-              <span
-                className={cn(
-                  "text-[10px] font-black tracking-tight uppercase",
-                  ch.isCompleted ? "text-[#49BF12]" : "text-[#FCB351]",
-                )}
-              >
-                {ch.isCompleted
-                  ? "Ukończone"
-                  : `Nagroda: ${ch.challenge.points} pkt`}
+            <div className="w-fit rounded-lg bg-[#FFF4E6] px-2.5 py-1">
+              <span className="text-[10px] font-black tracking-tight whitespace-nowrap text-[#FCB351] uppercase">
+                Nagroda: {ch.challenge.points} pkt
               </span>
             </div>
             <p className="mt-3 text-sm leading-tight font-bold text-gray-800">

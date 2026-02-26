@@ -14,7 +14,7 @@ export default function IdleStep({ onStart }: IdleStepProps) {
       title="Skanuj zakupy"
       subtitle="Zeskanuj torbę i zrób zdjęcie zakupów, aby otrzymać punkty lokalności."
     >
-      <div className="flex flex-col items-center gap-8 rounded-[2rem] border border-neutral-100 bg-white p-10 shadow-xl shadow-neutral-100/50 transition-all">
+      <div className="flex flex-col items-center gap-8 rounded-[2rem] border border-neutral-100 bg-white p-10 transition-all">
         <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-[#44d021]/10">
           <ShoppingBag className="h-12 w-12 text-[#44d021]" strokeWidth={1.5} />
         </div>

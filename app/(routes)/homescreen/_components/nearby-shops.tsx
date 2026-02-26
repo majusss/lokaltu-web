@@ -88,6 +88,8 @@ export function NearbyShops() {
     );
   }
 
+  if (nearbyPlaces.length === 0) return null;
+
   return (
     <div>
       <h2 className="ml-1.5 text-2xl font-semibold">

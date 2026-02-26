@@ -16,8 +16,8 @@ export default function CameraCaptureStep({
       title="Torba zweryfikowana"
       subtitle="Wszystko się zgadza! Teraz zrób wyraźne zdjęcie swoich zakupów."
     >
-      <div className="flex flex-col items-center gap-8 rounded-[2rem] border border-green-100 bg-green-50/50 p-10 shadow-lg shadow-green-100/20">
-        <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-sm ring-8 ring-green-100/50">
+      <div className="flex flex-col items-center gap-8 rounded-[2rem] border border-green-100 bg-green-50/50 p-10">
+        <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white ring-8 ring-green-100/50">
           <CheckCircle2
             className="h-14 w-14 text-green-500"
             strokeWidth={2.5}

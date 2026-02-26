@@ -1,6 +1,11 @@
 "use client";
 
-import { analyzeReceipt, awardPoints, verifyBag } from "@/app/actions/scan";
+import {
+  analyzeReceipt,
+  awardPoints,
+  checkUserBag,
+  verifyBag,
+} from "@/app/actions/scan";
 import { useCamera } from "@/lib/hooks/use-camera";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { useNfc } from "@/lib/hooks/use-nfc";
@@ -11,6 +16,7 @@ import CameraCaptureStep from "./steps/camera-capture";
 import ErrorStep from "./steps/error";
 import IdleStep from "./steps/idle";
 import NfcScanStep from "./steps/nfc-scan";
+import NoBagStep from "./steps/no-bag";
 import ResultStep from "./steps/result";
 
 type Step =
@@ -19,7 +25,8 @@ type Step =
   | "camera_ready"
   | "analyzing"
   | "result"
-  | "error";
+  | "error"
+  | "no_bag";
 
 interface ScanResult {
   confidence: number;
@@ -51,6 +58,13 @@ export default function NFCReader() {
   const handleStart = useCallback(async () => {
     setErrorMsg("");
     setResult(null);
+
+    const { hasBag } = await checkUserBag();
+    if (!hasBag) {
+      setStep("no_bag");
+      return;
+    }
+
     setStep("scanning_nfc");
 
     try {
@@ -127,6 +141,9 @@ export default function NFCReader() {
 
     case "error":
       return <ErrorStep message={errorMsg} onRetry={handleReset} />;
+
+    case "no_bag":
+      return <NoBagStep />;
 
     default:
       return <IdleStep onStart={handleStart} />;

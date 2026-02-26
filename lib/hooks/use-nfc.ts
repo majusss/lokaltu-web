@@ -74,12 +74,10 @@ export function useNfc() {
           content: data.payload?.content ?? data.payload?.id ?? "",
         };
 
-        // Update reactive state
         setNfcData(result.content);
         setError("");
         setScanning(false);
 
-        // Resolve the promise (if startScan() was awaited)
         clearTimeout(timeoutRef.current ?? undefined);
         resolveRef.current?.(result);
         resolveRef.current = null;
@@ -87,8 +85,7 @@ export function useNfc() {
       }
 
       if (data.type === "NFC_ERROR") {
-        const msg: string =
-          data.payload?.message ?? "Błąd skanowania NFC.";
+        const msg: string = data.payload?.message ?? "Błąd skanowania NFC.";
 
         setError(msg);
         setScanning(false);
@@ -123,92 +120,91 @@ export function useNfc() {
    *
    * @param timeoutMs How long to wait before rejecting (default: 30 s)
    */
-  const startScan = useCallback(
-    (timeoutMs = 30_000): Promise<NfcTagResult> => {
-      setScanning(true);
-      setError("");
-      setNfcData("");
+  const startScan = useCallback((timeoutMs = 30_000): Promise<NfcTagResult> => {
+    setScanning(true);
+    setError("");
+    setNfcData("");
 
-      // ── Native Android path ───────────────────────────────────────────────
-      if (window.AndroidBridge) {
-        return new Promise<NfcTagResult>((resolve, reject) => {
-          resolveRef.current = resolve;
-          rejectRef.current = reject;
+    // ── Native Android path ───────────────────────────────────────────────
+    if (window.AndroidBridge) {
+      return new Promise<NfcTagResult>((resolve, reject) => {
+        resolveRef.current = resolve;
+        rejectRef.current = reject;
 
-          sendToNative("START_NFC_SCAN");
+        sendToNative("START_NFC_SCAN");
 
-          timeoutRef.current = setTimeout(() => {
-            sendToNative("STOP_NFC_SCAN");
-            const err = new Error("Upłynął czas oczekiwania. Spróbuj ponownie.");
-            setError(err.message);
-            setScanning(false);
-            reject(err);
-            resolveRef.current = null;
-            rejectRef.current = null;
-          }, timeoutMs);
-        });
-      }
-
-      // ── Web NFC fallback (Chrome on Android, not in WebView) ──────────────
-      return new Promise<NfcTagResult>(async (resolve, reject) => {
-        try {
-          if (!("NDEFReader" in window)) {
-            throw new Error(
-              "Przeglądarka nie wspiera Web NFC API. Użyj aplikacji mobilnej.",
-            );
-          }
-
-          // NDEFReader is not in TypeScript's lib – cast via unknown first
-          const NdefReaderClass = (window as unknown as { NDEFReader: new () => NDEFReaderInstance }).NDEFReader;
-          const ndef = new NdefReaderClass();
-          await ndef.scan();
-
-          const safetyTimer = setTimeout(() => {
-            setScanning(false);
-            reject(new Error("Upłynął czas oczekiwania. Spróbuj ponownie."));
-          }, timeoutMs);
-
-          ndef.addEventListener("readingerror", () => {
-            clearTimeout(safetyTimer);
-            const err = new Error("Błąd odczytu tagu NFC. Spróbuj ponownie.");
-            setError(err.message);
-            setScanning(false);
-            reject(err);
-          });
-
-          ndef.addEventListener(
-            "reading",
-            ({ message, serialNumber }: NDEFReadingEvent) => {
-              clearTimeout(safetyTimer);
-              const id: string = serialNumber || "unknown";
-              let content = id;
-
-              for (const record of message.records) {
-                if (record.recordType === "text") {
-                  content = new TextDecoder(record.encoding).decode(
-                    record.data,
-                  );
-                  break;
-                }
-              }
-
-              const result: NfcTagResult = { id, content };
-              setNfcData(content);
-              setScanning(false);
-              resolve(result);
-            },
-          );
-        } catch (err: unknown) {
-          const msg =
-            err instanceof Error ? err.message : "Wystąpił błąd podczas skanowania NFC.";
-          setError(msg);
+        timeoutRef.current = setTimeout(() => {
+          sendToNative("STOP_NFC_SCAN");
+          const err = new Error("Upłynął czas oczekiwania. Spróbuj ponownie.");
+          setError(err.message);
           setScanning(false);
-          reject(err instanceof Error ? err : new Error(msg));
-        }
+          reject(err);
+          resolveRef.current = null;
+          rejectRef.current = null;
+        }, timeoutMs);
       });
-    },
-    [],
-  );
+    }
+
+    // ── Web NFC fallback (Chrome on Android, not in WebView) ──────────────
+    return new Promise<NfcTagResult>(async (resolve, reject) => {
+      try {
+        if (!("NDEFReader" in window)) {
+          throw new Error(
+            "Przeglądarka nie wspiera Web NFC API. Użyj aplikacji mobilnej.",
+          );
+        }
+
+        // NDEFReader is not in TypeScript's lib – cast via unknown first
+        const NdefReaderClass = (
+          window as unknown as { NDEFReader: new () => NDEFReaderInstance }
+        ).NDEFReader;
+        const ndef = new NdefReaderClass();
+        await ndef.scan();
+
+        const safetyTimer = setTimeout(() => {
+          setScanning(false);
+          reject(new Error("Upłynął czas oczekiwania. Spróbuj ponownie."));
+        }, timeoutMs);
+
+        ndef.addEventListener("readingerror", () => {
+          clearTimeout(safetyTimer);
+          const err = new Error("Błąd odczytu tagu NFC. Spróbuj ponownie.");
+          setError(err.message);
+          setScanning(false);
+          reject(err);
+        });
+
+        ndef.addEventListener(
+          "reading",
+          ({ message, serialNumber }: NDEFReadingEvent) => {
+            clearTimeout(safetyTimer);
+            const id: string = serialNumber || "unknown";
+            let content = id;
+
+            for (const record of message.records) {
+              if (record.recordType === "text") {
+                content = new TextDecoder(record.encoding).decode(record.data);
+                break;
+              }
+            }
+
+            const result: NfcTagResult = { id, content };
+            setNfcData(content);
+            setScanning(false);
+            resolve(result);
+          },
+        );
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Wystąpił błąd podczas skanowania NFC.";
+        setError(msg);
+        setScanning(false);
+        reject(err instanceof Error ? err : new Error(msg));
+      }
+    });
+  }, []);
 
   return {
     scanning,

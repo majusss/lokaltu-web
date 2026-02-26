@@ -27,6 +27,18 @@ export async function verifyBag(
 }
 
 /**
+ * Checks if the current user has a bagId assigned.
+ */
+export async function checkUserBag(): Promise<{ hasBag: boolean }> {
+  const user = await currentUser();
+  if (!user) return { hasBag: false };
+
+  const userDb = await prisma.user.findUnique({ where: { id: user.id } });
+  console.log(userDb?.bagId);
+  return { hasBag: !!userDb?.bagId };
+}
+
+/**
  * Sends a base64 image to OpenRouter AI and returns how confident the AI is
  * that the photo shows fresh (just-done) grocery shopping, along with the size of the purchase.
  */

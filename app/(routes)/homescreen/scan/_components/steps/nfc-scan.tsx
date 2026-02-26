@@ -18,7 +18,7 @@ function NfcPulse() {
           }}
         />
       ))}
-      <div className="bg-main shadow-main/40 relative z-10 flex h-32 w-32 items-center justify-center rounded-[2.5rem] shadow-2xl">
+      <div className="bg-main relative z-10 flex h-32 w-32 items-center justify-center rounded-[2.5rem]">
         <Nfc className="h-16 w-16 text-white" strokeWidth={1.5} />
       </div>
     </div>

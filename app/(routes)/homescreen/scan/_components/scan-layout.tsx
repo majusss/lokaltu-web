@@ -25,7 +25,7 @@ export function ScanLayout({
         className,
       )}
     >
-      <div className="my-10">
+      <div className="mt-8 mb-10">
         <h1 className="text-4xl font-black tracking-tight text-neutral-900 drop-shadow-sm">
           {title}
         </h1>
