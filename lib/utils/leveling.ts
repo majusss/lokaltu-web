@@ -84,7 +84,7 @@ export function getTreeWorkEquivalent(co2Saved: number): {
 export function getCO2Context(co2Saved: number): string {
   if (co2Saved <= 0) return "Zacznij skanować, aby zobaczyć swój wpływ!";
   if (co2Saved < 5)
-    return `To tyle, ile jedno drzewo pochłania przez ${Math.max(1, Math.round(co2Saved / 2))} miesiące!`;
+    return "To tyle, ile jedno drzewo pochłania przez 2 miesiące!";
   if (co2Saved < 20)
     return "To tyle, ile jedno drzewo pochłania przez pół roku!";
   if (co2Saved < 100)
