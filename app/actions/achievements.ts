@@ -1,7 +1,9 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { currentUser } from "@clerk/nextjs/server";
 import { amIAdmin } from "./admin";
+import { syncChallenges } from "./challenges";
 
 export async function getAchievements(page: number = 1, limit: number = 10) {
   if (!(await amIAdmin())) {
@@ -50,4 +52,37 @@ export async function deleteAchievement(id: number) {
   }
 
   return prisma.achievement.delete({ where: { id } });
+}
+
+export async function getUserAchievements() {
+  const user = await currentUser();
+  if (!user) return [];
+
+  // Sync challenges to ensure all badge names are in DB
+  await syncChallenges();
+
+  // Get all challenges that can have a badge
+  const allBadgeChallenges = await prisma.challenge.findMany({
+    where: {
+      badgeName: { not: null },
+    },
+  });
+
+  // Get user's progress for these challenges
+  const userProgress = await prisma.userChallengeProgress.findMany({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  return allBadgeChallenges.map((ch) => {
+    const progress = userProgress.find((p) => p.challengeId === ch.id);
+    return {
+      id: ch.id,
+      name: ch.badgeName || ch.name,
+      description: ch.description,
+      points: ch.points,
+      isEarned: progress?.isCompleted || false,
+    };
+  });
 }

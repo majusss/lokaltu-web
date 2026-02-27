@@ -6,11 +6,11 @@ import {
   ChevronRight,
   FilePlus2,
   Flag,
-  List,
   Settings,
   UserCircle2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default async function ProfilePage() {
   const user = await currentUser();
@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     {
       label: "Zdobyte odznaki",
       icon: <Award className="h-6 w-6 text-gray-800" />,
-      href: "#",
+      href: "/homescreen/profile/badges",
     },
     {
       label: "Moje zgłoszenia",
@@ -33,11 +33,6 @@ export default async function ProfilePage() {
     {
       label: "Moje posty",
       icon: <FilePlus2 className="h-6 w-6 text-gray-800" />,
-      href: "#",
-    },
-    {
-      label: "Wyzwania",
-      icon: <List className="h-6 w-6 text-gray-800" />,
       href: "#",
     },
     {
@@ -85,8 +80,9 @@ export default async function ProfilePage() {
 
         <div className="flex flex-col divide-y divide-gray-50">
           {menuItems.map((item, index) => (
-            <div
+            <Link
               key={index}
+              href={item.href}
               className="group flex cursor-pointer items-center justify-between py-5 transition-all active:opacity-60"
             >
               <div className="flex items-center gap-4">
@@ -98,7 +94,7 @@ export default async function ProfilePage() {
                 </span>
               </div>
               <ChevronRight className="h-6 w-6 stroke-[2.5px] text-[#84cc16]" />
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -19,6 +19,7 @@ const CHALLENGES_LIST = [
     description: "Zrób zakupy w 2 różnych dniach w ciągu jednego tygodnia.",
     goal: 2,
     points: 30,
+    badgeName: "Rozgrzewka",
   },
   {
     id: "local_patriot",
@@ -35,6 +36,7 @@ const CHALLENGES_LIST = [
     description: "Odwiedź 3 różne punkty na mapie.",
     goal: 3,
     points: 100,
+    badgeName: "Odkrywca Smaków",
   },
   {
     id: "morning_master",
@@ -42,6 +44,7 @@ const CHALLENGES_LIST = [
     description: "Zrób zakupy przed godziną 10:00 rano.",
     goal: 1,
     points: 20,
+    badgeName: "Ranny Ptaszek",
   },
   {
     id: "weekend_market",
@@ -49,6 +52,7 @@ const CHALLENGES_LIST = [
     description: "Zrób zakupy w sobotę.",
     goal: 1,
     points: 25,
+    badgeName: "Sobotni Kupiec",
   },
   {
     id: "map_maker",
@@ -64,6 +68,7 @@ const CHALLENGES_LIST = [
     description: "Utrzymaj serię zakupów przez 4 tygodnie z rzędu.",
     goal: 4,
     points: 200,
+    badgeName: "Maratończyk",
   },
   {
     id: "no_plastic",
@@ -224,34 +229,6 @@ export async function checkChallenges(userId: string) {
           where: { id: userId },
           data: { lokaltuPoints: { increment: ch.points } },
         });
-
-        if (ch.badgeName) {
-          // Find or create global achievement
-          let achievement = await prisma.achievement.findFirst({
-            where: { name: ch.badgeName },
-          });
-
-          if (!achievement) {
-            achievement = await prisma.achievement.create({
-              data: {
-                name: ch.badgeName,
-                description: ch.description,
-                iconUrl: "/badges/default.png",
-                points: ch.points,
-              },
-            });
-          }
-
-          // Link user to achievement
-          await prisma.user.update({
-            where: { id: userId },
-            data: {
-              achievements: {
-                connect: { id: achievement.id },
-              },
-            },
-          });
-        }
       }
     }
   }
