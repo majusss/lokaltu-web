@@ -82,6 +82,7 @@ export async function updatePlace(
     category?: string;
     image?: string;
     description?: string;
+    verified?: boolean;
   },
 ) {
   if (!(await amIAdmin())) {

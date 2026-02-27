@@ -102,6 +102,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
     longitude: "",
     category: "",
     description: "",
+    verified: false,
   });
 
   const fetchData = (page: number, limit: number) => {
@@ -149,6 +150,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         longitude: "",
         category: "",
         description: "",
+        verified: false,
       });
       setImageFile(null);
       fetchData(currentPage, pageSize);

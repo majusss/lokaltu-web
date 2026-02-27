@@ -61,7 +61,6 @@ export function AddPlaceDialog({
 
   const hasLocation = formData.latitude !== 0 || formData.longitude !== 0;
 
-  // Sync picked location from map into form
   useEffect(() => {
     if (pickedLocation && !open) {
       setFormData((prev) => ({
@@ -71,7 +70,6 @@ export function AddPlaceDialog({
       }));
       onClearPicked();
       setOpen(true);
-      // Clear location error if it existed
       setErrors((prev) => {
         const next = { ...prev };
         delete next.location;
@@ -94,7 +92,6 @@ export function AddPlaceDialog({
       const reader = new FileReader();
       reader.onload = (ev) => setPreview(ev.target?.result as string);
       reader.readAsDataURL(selected);
-      // Clear file error
       setErrors((prev) => {
         const next = { ...prev };
         delete next.file;
@@ -220,7 +217,6 @@ export function AddPlaceDialog({
 
   return (
     <>
-      {/* FAB trigger */}
       {!isPicking && (
         <button
           onClick={() => setOpen(true)}
@@ -258,7 +254,6 @@ export function AddPlaceDialog({
               </DialogHeader>
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                {/* Image upload */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="ml-1 text-sm font-bold tracking-widest text-neutral-700 uppercase">
@@ -329,7 +324,6 @@ export function AddPlaceDialog({
                   )}
                 </div>
 
-                {/* Form Fields */}
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -438,7 +432,6 @@ export function AddPlaceDialog({
                   </div>
                 </div>
 
-                {/* Location selection */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="ml-1 text-sm font-bold tracking-widest text-neutral-700 uppercase">
