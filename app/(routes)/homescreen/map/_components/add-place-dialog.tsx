@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   ImagePlus,
@@ -422,7 +423,7 @@ export function AddPlaceDialog({
                     >
                       Więcej o miejscu
                     </Label>
-                    <Input
+                    <Textarea
                       id="description"
                       value={formData.description}
                       onChange={(e) =>
@@ -432,6 +433,7 @@ export function AddPlaceDialog({
                         })
                       }
                       placeholder="Napisz kilka słów zachęty..."
+                      className="min-h-32 rounded-2xl"
                     />
                   </div>
                 </div>

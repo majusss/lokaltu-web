@@ -26,7 +26,7 @@ export default async function StatsPage() {
   const totalVisits = activity.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
-    <div className="relative min-h-screen bg-[#F8F9FA] pt-24">
+    <div className="relative min-h-screen bg-white pt-24">
       {/* Header with Gradient - Match Home Screen pt-8 and absolute positioning */}
       <div className="absolute top-0 left-0 h-50 w-full bg-[linear-gradient(249.58deg,#61F681_0%,#49BF12_49.21%,#DBC443_97.83%)] pt-8">
         <div className="mb-2 px-6">

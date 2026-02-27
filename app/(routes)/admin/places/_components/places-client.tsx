@@ -44,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { PlaceModel as Place } from "@/generated/prisma/models/Place";
 import {
   ChevronLeft,
@@ -91,6 +92,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
     longitude: "",
     category: "",
     description: "",
+    verified: false,
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -178,6 +180,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
       category: place.category,
       description:
         (place as Place & { description?: string }).description || "",
+      verified: !!place.verified,
     });
     setEditImageFile(null);
     setEditDialogOpen(true);
@@ -203,6 +206,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         longitude: parseFloat(editFormData.longitude),
         category: editFormData.category,
         description: editFormData.description || undefined,
+        verified: editFormData.verified,
         ...(imageKey ? { image: imageKey } : {}),
       });
       setEditDialogOpen(false);
@@ -336,7 +340,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="description">Opis</Label>
-                      <Input
+                      <Textarea
                         id="description"
                         value={formData.description}
                         onChange={(e) =>
@@ -346,6 +350,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                           })
                         }
                         placeholder="Opis miejsca"
+                        className="min-h-25"
                       />
                     </div>
                     <div className="grid gap-2">
@@ -537,7 +542,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edytuj miejsce</DialogTitle>
             <DialogDescription>
@@ -607,8 +612,25 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
               />
             </div>
             <div className="grid gap-2">
+              <Label htmlFor="edit-verified">Status weryfikacji</Label>
+              <Select
+                value={editFormData.verified ? "true" : "false"}
+                onValueChange={(v) =>
+                  setEditFormData({ ...editFormData, verified: v === "true" })
+                }
+              >
+                <SelectTrigger id="edit-verified">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Zweryfikowany</SelectItem>
+                  <SelectItem value="false">Oczekuje na weryfikację</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="edit-description">Opis</Label>
-              <Input
+              <Textarea
                 id="edit-description"
                 value={editFormData.description}
                 onChange={(e) =>
@@ -617,6 +639,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                     description: e.target.value,
                   })
                 }
+                className="min-h-[100px]"
               />
             </div>
             <div className="grid gap-2">
