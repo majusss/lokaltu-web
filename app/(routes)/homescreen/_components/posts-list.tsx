@@ -22,12 +22,9 @@ export function PostsList({
 
   return (
     <div className="space-y-4">
-      <div className="mb-4 flex items-center justify-between px-1.5">
-        <h2 className="text-xl font-black text-gray-900">
-          Co w trawie piszczy?
-        </h2>
-        <span className="text-xs font-bold text-[#49BF12]">Więcej</span>
-      </div>
+      <h2 className="mb-4 text-xl font-black text-gray-900">
+        Co w trawie piszczy?
+      </h2>
 
       <div className="space-y-4">
         {posts.map((post) => (

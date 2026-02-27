@@ -1,10 +1,13 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 import {
   createPlace,
   deletePlace,
   getPlaces,
   updatePlace,
+  verifyPlace,
 } from "@/app/actions/places";
 import { getUploadUrl } from "@/app/actions/storage";
 import { Button } from "@/components/ui/button";
@@ -87,6 +90,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
     latitude: "",
     longitude: "",
     category: "",
+    description: "",
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -132,6 +136,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
         category: formData.category,
+        description: formData.description,
         image: imageKey,
       });
       setCreateDialogOpen(false);
@@ -141,6 +146,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         latitude: "",
         longitude: "",
         category: "",
+        description: "",
       });
       setImageFile(null);
       fetchData(currentPage, pageSize);
@@ -202,6 +208,13 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
       setEditDialogOpen(false);
       setPlaceToEdit(null);
       setEditImageFile(null);
+      fetchData(currentPage, pageSize);
+    });
+  };
+
+  const handleToggleVerify = (id: string, current: boolean) => {
+    startTransition(async () => {
+      await verifyPlace(id, !current);
       fetchData(currentPage, pageSize);
     });
   };
@@ -322,6 +335,20 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                       />
                     </div>
                     <div className="grid gap-2">
+                      <Label htmlFor="description">Opis</Label>
+                      <Input
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        placeholder="Opis miejsca"
+                      />
+                    </div>
+                    <div className="grid gap-2">
                       <Label>Zdjęcie</Label>
                       <input
                         ref={fileInputRef}
@@ -376,6 +403,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                   <TableHead>Adres</TableHead>
                   <TableHead>Kategoria</TableHead>
                   <TableHead>Współrzędne</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Akcje</TableHead>
                 </TableRow>
               </TableHeader>
@@ -407,6 +435,24 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {place.latitude.toFixed(4)}, {place.longitude.toFixed(4)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant={place.verified ? "secondary" : "outline"}
+                        size="sm"
+                        className={cn(
+                          "h-7 px-2 text-[10px] font-bold uppercase",
+                          place.verified
+                            ? "border-green-200 bg-green-100 text-green-700 hover:bg-green-200"
+                            : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100",
+                        )}
+                        onClick={() =>
+                          handleToggleVerify(place.id, !!place.verified)
+                        }
+                        disabled={isPending}
+                      >
+                        {place.verified ? "Zweryfikowany" : "Oczekuje"}
+                      </Button>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">

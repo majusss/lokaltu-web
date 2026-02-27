@@ -6,6 +6,7 @@ import {
   MarkerPopup,
   useMap,
 } from "@/components/ui/map";
+import { cn } from "@/lib/utils";
 import { ChevronRight, MapPin, Navigation } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -21,6 +22,8 @@ type MapPlace = {
   category: string;
   image: string | null;
   description: string | null;
+  verified: boolean;
+  creatorId: string | null;
 };
 
 const CDN_URL = process.env.NEXT_PUBLIC_CDN_URL;
@@ -172,7 +175,12 @@ export function ClusterHandler({
             }}
           >
             <MarkerContent className="animate-in fade-in zoom-in duration-300">
-              <div className="bg-main flex h-10 w-10 cursor-pointer items-center justify-center rounded-full shadow-lg ring-2 ring-white transition-all hover:scale-110 active:scale-95">
+              <div
+                className={cn(
+                  "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full shadow-lg ring-2 ring-white transition-all hover:scale-110 active:scale-95",
+                  place.verified ? "bg-main" : "bg-amber-500 ring-amber-200",
+                )}
+              >
                 <MapPin className="h-5 w-5 text-white" />
               </div>
             </MarkerContent>
@@ -187,13 +195,25 @@ export function ClusterHandler({
                         fill
                         className="object-cover"
                       />
+                      {!place.verified && (
+                        <div className="absolute inset-x-0 bottom-0 bg-amber-500/90 py-1 text-center text-[10px] font-black tracking-widest text-white uppercase backdrop-blur-sm">
+                          Oczekuje na weryfikację
+                        </div>
+                      )}
                     </div>
                   )}
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-base leading-tight font-bold text-neutral-900">
-                        {place.name}
-                      </h3>
+                      <div className="flex flex-col gap-0.5">
+                        <h3 className="text-base leading-tight font-bold text-neutral-900">
+                          {place.name}
+                        </h3>
+                        {!place.verified && !place.image && (
+                          <span className="text-[10px] font-black tracking-wider text-amber-500 uppercase">
+                            Weryfikacja...
+                          </span>
+                        )}
+                      </div>
                       <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-neutral-300" />
                     </div>
 
@@ -212,6 +232,11 @@ export function ClusterHandler({
                         <span className="inline-block rounded-lg bg-[#49BF12]/10 px-2.5 py-1 text-[10px] font-black tracking-tight text-[#49BF12] uppercase">
                           {place.category}
                         </span>
+                        {!place.verified && (
+                          <span className="text-[9px] font-bold text-amber-600">
+                            Tylko dla Ciebie
+                          </span>
+                        )}
                       </div>
 
                       <a

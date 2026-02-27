@@ -1,7 +1,6 @@
 "use client";
 
 import { getMapPlaces } from "@/app/actions/places";
-import { AddPlaceDialog } from "@/components/places/add-place-dialog";
 import {
   Map,
   MapControls,
@@ -12,6 +11,7 @@ import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { MapPin, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AddPlaceDialog } from "./add-place-dialog";
 import { ClusterHandler } from "./cluster-handler";
 import { MapAutoCenterer } from "./map-auto-centerer";
 import { MapClickHandler } from "./map-click-handler";
@@ -26,6 +26,8 @@ type MapPlace = {
   category: string;
   image: string | null;
   description: string | null;
+  verified: boolean;
+  creatorId: string | null;
 };
 
 export function MapClient() {
@@ -141,20 +143,20 @@ export function MapClient() {
       )}
 
       {/* FAB - repositioned under map controls */}
-      {!isPicking && (
-        <div className="fixed right-4 bottom-22 z-10 transition-transform hover:scale-105 active:scale-95">
-          <AddPlaceDialog
-            onStartPicking={handleStartPicking}
-            pickedLocation={pickedLocation}
-            onClearPicked={handleClearPicked}
-            userLocation={
-              typeof latitude === "number" && typeof longitude === "number"
-                ? { latitude, longitude }
-                : null
-            }
-          />
-        </div>
-      )}
+      <div className="fixed right-4 bottom-22 z-10 transition-transform">
+        <AddPlaceDialog
+          onStartPicking={handleStartPicking}
+          pickedLocation={pickedLocation}
+          onClearPicked={handleClearPicked}
+          isPicking={isPicking}
+          onSuccess={refreshPlaces}
+          userLocation={
+            typeof latitude === "number" && typeof longitude === "number"
+              ? { latitude, longitude }
+              : null
+          }
+        />
+      </div>
     </div>
   );
 }

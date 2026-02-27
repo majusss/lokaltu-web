@@ -5,7 +5,12 @@ import { currentUser } from "@clerk/nextjs/server";
 import { amIAdmin } from "./admin";
 
 export async function getMapPlaces() {
+  const user = await currentUser();
+
   return prisma.place.findMany({
+    where: {
+      OR: [{ verified: true }, { creatorId: user?.id || "anonymous" }],
+    },
     select: {
       id: true,
       name: true,
@@ -15,6 +20,8 @@ export async function getMapPlaces() {
       category: true,
       image: true,
       description: true,
+      verified: true,
+      creatorId: true,
     },
   });
 }
@@ -48,8 +55,8 @@ export async function createPlace(data: {
   latitude: number;
   longitude: number;
   category: string;
-  image: string; // Changed from imageUrl
-  description?: string; // Added
+  image: string;
+  description?: string;
 }) {
   const user = await currentUser();
 
@@ -93,4 +100,15 @@ export async function deletePlace(id: string) {
   }
 
   return prisma.place.delete({ where: { id } });
+}
+
+export async function verifyPlace(id: string, verified: boolean) {
+  if (!(await amIAdmin())) {
+    throw new Error("Unauthorized");
+  }
+
+  return prisma.place.update({
+    where: { id },
+    data: { verified },
+  });
 }

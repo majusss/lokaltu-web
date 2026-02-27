@@ -30,6 +30,8 @@ model Place {
   image       String? // URL into R2 bucket
   description String?
 
+  verified Boolean @default(false)
+
   savedBy   User[]     @relation("SavedPlaces")
   purchases Purchase[]
 
