@@ -51,3 +51,12 @@ export async function completeProfile(bagId?: string) {
     },
   });
 }
+export async function updateUserName(name: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  return prisma.user.update({
+    where: { id: user.id },
+    data: { name },
+  });
+}

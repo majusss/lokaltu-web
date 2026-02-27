@@ -22,7 +22,7 @@ export default async function BadgesPage() {
       </div>
 
       {/* Main Content Card */}
-      <div className="relative h-full w-full space-y-6 rounded-t-2xl bg-white px-6 pt-10 pb-32 shadow-sm transition-all">
+      <div className="relative h-full w-full space-y-6 rounded-t-2xl bg-white px-6 pt-10 pb-32 transition-all">
         <div className="grid grid-cols-2 gap-4">
           {achievements.map((badge) => (
             <div

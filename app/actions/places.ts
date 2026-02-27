@@ -83,6 +83,7 @@ export async function updatePlace(
     image?: string;
     description?: string;
     verified?: boolean;
+    rejected?: boolean;
   },
 ) {
   if (!(await amIAdmin())) {
@@ -110,6 +111,55 @@ export async function verifyPlace(id: string, verified: boolean) {
 
   return prisma.place.update({
     where: { id },
-    data: { verified },
+    data: {
+      verified,
+      rejected: verified ? false : undefined,
+    },
+  });
+}
+
+export async function rejectPlace(id: string, rejected: boolean) {
+  if (!(await amIAdmin())) {
+    throw new Error("Unauthorized");
+  }
+
+  return prisma.place.update({
+    where: { id },
+    data: { rejected, verified: !rejected ? undefined : false },
+  });
+}
+
+export async function getUserSubmissions() {
+  const user = await currentUser();
+  if (!user) return [];
+
+  return prisma.place.findMany({
+    where: {
+      creatorId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function deleteMySubmission(id: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const place = await prisma.place.findUnique({
+    where: { id },
+  });
+
+  if (!place || place.creatorId !== user.id) {
+    throw new Error("Nie masz uprawnień do usunięcia tego punktu.");
+  }
+
+  if (place.verified && !place.rejected) {
+    throw new Error("Nie możesz usunąć zaakceptowanego punktu.");
+  }
+
+  return prisma.place.delete({
+    where: { id },
   });
 }

@@ -31,6 +31,7 @@ model Place {
   description String?
 
   verified Boolean @default(false)
+  rejected Boolean @default(false)
 
   savedBy   User[]     @relation("SavedPlaces")
   purchases Purchase[]

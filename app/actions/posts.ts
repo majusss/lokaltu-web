@@ -1,5 +1,7 @@
 "use server";
 
+import { currentUser } from "@clerk/nextjs/server";
+
 import {
   PostDefaultArgs,
   PostGetPayload,
@@ -54,4 +56,48 @@ export async function getPosts(
     currentPage: page,
     totalCount,
   };
+}
+export async function getUserPosts() {
+  const user = await currentUser();
+  if (!user) return [];
+
+  return prisma.post.findMany({
+    where: {
+      authorId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+    },
+  });
+}
+
+export async function deleteMyPost(id: number) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const post = await prisma.post.findUnique({
+    where: { id },
+  });
+
+  if (!post || post.authorId !== user.id) {
+    throw new Error("Nie masz uprawnień do usunięcia tego postu.");
+  }
+
+  return prisma.post.delete({
+    where: { id },
+  });
 }

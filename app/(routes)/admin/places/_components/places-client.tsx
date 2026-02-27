@@ -6,6 +6,7 @@ import {
   createPlace,
   deletePlace,
   getPlaces,
+  rejectPlace,
   updatePlace,
   verifyPlace,
 } from "@/app/actions/places";
@@ -93,6 +94,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
     category: "",
     description: "",
     verified: false,
+    rejected: false,
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -103,6 +105,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
     category: "",
     description: "",
     verified: false,
+    rejected: false,
   });
 
   const fetchData = (page: number, limit: number) => {
@@ -151,6 +154,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         category: "",
         description: "",
         verified: false,
+        rejected: false,
       });
       setImageFile(null);
       fetchData(currentPage, pageSize);
@@ -183,6 +187,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
       description:
         (place as Place & { description?: string }).description || "",
       verified: !!place.verified,
+      rejected: !!(place as any).rejected,
     });
     setEditImageFile(null);
     setEditDialogOpen(true);
@@ -209,6 +214,7 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
         category: editFormData.category,
         description: editFormData.description || undefined,
         verified: editFormData.verified,
+        rejected: editFormData.rejected,
         ...(imageKey ? { image: imageKey } : {}),
       });
       setEditDialogOpen(false);
@@ -221,6 +227,13 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
   const handleToggleVerify = (id: string, current: boolean) => {
     startTransition(async () => {
       await verifyPlace(id, !current);
+      fetchData(currentPage, pageSize);
+    });
+  };
+
+  const handleToggleReject = (id: string, current: boolean) => {
+    startTransition(async () => {
+      await rejectPlace(id, !current);
       fetchData(currentPage, pageSize);
     });
   };
@@ -458,8 +471,37 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
                         }
                         disabled={isPending}
                       >
-                        {place.verified ? "Zweryfikowany" : "Oczekuje"}
+                        {place.verified
+                          ? "Zweryfikowany"
+                          : (place as any).rejected
+                            ? "Odrzucony"
+                            : "Oczekuje"}
                       </Button>
+                      {!place.verified && (
+                        <Button
+                          variant={
+                            (place as any).rejected ? "destructive" : "outline"
+                          }
+                          size="sm"
+                          className={cn(
+                            "ml-2 h-7 px-2 text-[10px] font-bold uppercase",
+                            (place as any).rejected
+                              ? "bg-red-50 text-red-700 hover:bg-red-100"
+                              : "border-red-200 text-red-600 hover:bg-red-50",
+                          )}
+                          onClick={() =>
+                            handleToggleReject(
+                              place.id,
+                              !!(place as any).rejected,
+                            )
+                          }
+                          disabled={isPending}
+                        >
+                          {(place as any).rejected
+                            ? "Cofnij odrzucenie"
+                            : "Odrzuć"}
+                        </Button>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
@@ -614,19 +656,32 @@ export function PlacesClient({ initialData }: PlacesClientProps) {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-verified">Status weryfikacji</Label>
+              <Label htmlFor="edit-status">Status</Label>
               <Select
-                value={editFormData.verified ? "true" : "false"}
+                value={
+                  editFormData.verified
+                    ? "verified"
+                    : editFormData.rejected
+                      ? "rejected"
+                      : "pending"
+                }
                 onValueChange={(v) =>
-                  setEditFormData({ ...editFormData, verified: v === "true" })
+                  setEditFormData({
+                    ...editFormData,
+                    verified: v === "verified",
+                    rejected: v === "rejected",
+                  })
                 }
               >
-                <SelectTrigger id="edit-verified">
+                <SelectTrigger id="edit-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">Zweryfikowany</SelectItem>
-                  <SelectItem value="false">Oczekuje na weryfikację</SelectItem>
+                  <SelectItem value="verified">Zweryfikowany</SelectItem>
+                  <SelectItem value="pending">
+                    Oczekuje na weryfikację
+                  </SelectItem>
+                  <SelectItem value="rejected">Odrzucony</SelectItem>
                 </SelectContent>
               </Select>
             </div>

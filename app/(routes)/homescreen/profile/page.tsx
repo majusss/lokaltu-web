@@ -28,17 +28,17 @@ export default async function ProfilePage() {
     {
       label: "Moje zgłoszenia",
       icon: <Flag className="h-6 w-6 text-gray-800" />,
-      href: "#",
+      href: "/homescreen/profile/submissions",
     },
     {
       label: "Moje posty",
       icon: <FilePlus2 className="h-6 w-6 text-gray-800" />,
-      href: "#",
+      href: "/homescreen/profile/posts",
     },
     {
       label: "Ustawienia aplikacji",
       icon: <Settings className="h-6 w-6 text-gray-800" />,
-      href: "#",
+      href: "/homescreen/profile/settings",
     },
   ];
 
