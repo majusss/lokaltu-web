@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
+import { clerkClient, currentUser } from "@clerk/nextjs/server";
 
 export async function getUserDb() {
   const user = await currentUser();
@@ -51,12 +51,27 @@ export async function completeProfile(bagId?: string) {
     },
   });
 }
+
 export async function updateUserName(name: string) {
   const user = await currentUser();
   if (!user) throw new Error("Unauthorized");
 
-  return prisma.user.update({
+  // Update Prisma
+  const updatedUser = await prisma.user.update({
     where: { id: user.id },
     data: { name },
   });
+
+  // Update Clerk
+  try {
+    const client = await clerkClient();
+    await client.users.updateUser(user.id, {
+      firstName: name,
+    });
+  } catch (error) {
+    console.error("Error updating Clerk user:", error);
+    // Even if Clerk update fails, we already updated Prisma
+  }
+
+  return updatedUser;
 }
