@@ -101,3 +101,17 @@ export async function deleteMyPost(id: number) {
     where: { id },
   });
 }
+
+export async function createPost(title: string, content: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  return prisma.post.create({
+    data: {
+      title,
+      content,
+      allowed: true,
+      authorId: user.id,
+    },
+  });
+}
