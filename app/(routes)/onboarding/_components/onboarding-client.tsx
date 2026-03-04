@@ -1,5 +1,6 @@
 "use client";
 
+import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -40,15 +41,17 @@ export function OnboardingClient() {
   const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      await completeOnboardingAction();
       router.replace("/auth/sign-up");
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await completeOnboardingAction();
     router.replace("/auth/sign-up");
   };
 

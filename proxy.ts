@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/auth(.*)",
@@ -9,9 +10,28 @@ const isPublicRoute = createRouteMatcher([
   "/polityka-prywatnosci.pdf",
 ]);
 
+const isOnboardingRoute = createRouteMatcher(["/onboarding"]);
+
 export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
+  const { userId } = await auth();
+  const onboardingCompleted = req.cookies.get("onboarding_completed");
+
+  if (userId && isOnboardingRoute(req)) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  if (!userId && !isPublicRoute(req)) {
+    if (!onboardingCompleted) {
+      return NextResponse.redirect(new URL("/onboarding", req.url));
+    }
     await auth.protect();
+  }
+
+  if (!userId && req.nextUrl.pathname === "/") {
+    if (!onboardingCompleted) {
+      return NextResponse.redirect(new URL("/onboarding", req.url));
+    }
+    return NextResponse.redirect(new URL("/auth/sign-up", req.url));
   }
 });
 
