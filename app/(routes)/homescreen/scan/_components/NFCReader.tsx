@@ -90,7 +90,7 @@ export default function NFCReader() {
       const aiResult = await analyzeReceipt(base64);
 
       let pointsData;
-      if (aiResult.confidence >= 80) {
+      if (aiResult.confidence >= 70) {
         pointsData = await awardPoints({
           size: aiResult.size,
           lat: latitude ?? undefined,
