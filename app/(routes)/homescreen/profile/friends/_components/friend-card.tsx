@@ -5,6 +5,7 @@ import { getLevel } from "@/lib/utils/leveling";
 import { cn } from "@/lib/utils";
 import { MoreVertical, UserMinus } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 
 type Friend = {
@@ -41,30 +42,34 @@ export default function FriendCard({ requestId, friend }: Props) {
         isPending && "opacity-50",
       )}
     >
-      {/* Avatar */}
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-gray-200">
-        <Image
-          src={friend.avatarUrl}
-          alt={friend.name}
-          fill
-          className="object-cover"
-        />
-      </div>
-
-      {/* Info */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-semibold text-gray-800">
-          {friend.name}
-        </span>
-        <span className="text-xs text-gray-400">
-          Poziom {level.level} · {friend.lokaltuPoints} pkt
-        </span>
-        <div className="mt-1 flex gap-3 text-[11px] text-gray-400">
-          <span>{friend.co2Saved.toFixed(1)} kg CO₂</span>
-          <span>·</span>
-          <span>{friend.bagsSaved} toreb</span>
+      {/* Avatar + Info — tappable link to profile */}
+      <Link
+        href={`/homescreen/profile/${friend.id}`}
+        className="flex min-w-0 flex-1 items-center gap-3"
+      >
+        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-gray-200">
+          <Image
+            src={friend.avatarUrl}
+            alt={friend.name}
+            fill
+            className="object-cover"
+          />
         </div>
-      </div>
+
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate font-semibold text-gray-800">
+            {friend.name}
+          </span>
+          <span className="text-xs text-gray-400">
+            Poziom {level.level} · {friend.lokaltuPoints} pkt
+          </span>
+          <div className="mt-1 flex gap-3 text-[11px] text-gray-400">
+            <span>{friend.co2Saved.toFixed(1)} kg CO₂</span>
+            <span>·</span>
+            <span>{friend.bagsSaved} toreb</span>
+          </div>
+        </div>
+      </Link>
 
       {/* Three-dot menu */}
       <div className="relative" ref={menuRef}>

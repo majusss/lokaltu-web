@@ -5,6 +5,7 @@ import { getLevel } from "@/lib/utils/leveling";
 import { cn } from "@/lib/utils";
 import { Check, Clock, Search, UserPlus, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 type SearchResult = {
@@ -48,21 +49,26 @@ function SearchResultCard({
         isPending && "opacity-50",
       )}
     >
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-gray-200">
-        <Image
-          src={user.avatarUrl}
-          alt={user.name}
-          fill
-          className="object-cover"
-        />
-      </div>
+      <Link
+        href={`/homescreen/profile/${user.id}`}
+        className="flex min-w-0 flex-1 items-center gap-3"
+      >
+        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-gray-200">
+          <Image
+            src={user.avatarUrl}
+            alt={user.name}
+            fill
+            className="object-cover"
+          />
+        </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-semibold text-gray-800">{user.name}</span>
-        <span className="text-xs text-gray-400">
-          Poziom {level.level} · {user.lokaltuPoints} pkt
-        </span>
-      </div>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate font-semibold text-gray-800">{user.name}</span>
+          <span className="text-xs text-gray-400">
+            Poziom {level.level} · {user.lokaltuPoints} pkt
+          </span>
+        </div>
+      </Link>
 
       {user.friendStatus === "friends" && (
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#F1F9D1] px-3 py-1.5 text-xs font-semibold text-[#49BF12]">
