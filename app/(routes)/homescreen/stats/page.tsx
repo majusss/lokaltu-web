@@ -1,15 +1,16 @@
-import { getUserActivity } from "@/app/actions/stats";
+import { getFriendsStats, getUserActivity } from "@/app/actions/stats";
 import { getUserDb } from "@/app/actions/user";
 import ecologySvg from "@/app/assets/ecology.svg";
 import pointsSvg from "@/app/assets/points.svg";
 import { cn } from "@/lib/utils";
 import { getBagsContext, getCO2Context, getLevel } from "@/lib/utils/leveling";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 
 export default async function StatsPage() {
   const userDb = await getUserDb();
   const activity = await getUserActivity();
+  const friendsStats = await getFriendsStats();
 
   if (!userDb) return null;
 
@@ -145,6 +146,144 @@ export default async function StatsPage() {
             </span>
           </div>
         </div>
+
+        {/* ── Friends Stats ─────────────────────────────────────────── */}
+        {friendsStats && (
+          <div className="mt-12 space-y-4">
+            <div className="flex items-center gap-2 px-1">
+              <Users size={20} className="text-[#49BF12]" />
+              <h2 className="text-xl font-bold text-gray-900">
+                Twoi znajomi
+              </h2>
+            </div>
+
+            {friendsStats.totalFriends === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-[24px] border border-gray-100 bg-[#F9FDF5] py-10 text-center">
+                <Users size={40} className="mb-3 text-[#49BF12]/40" />
+                <p className="font-semibold text-gray-500">
+                  Nie masz jeszcze znajomych
+                </p>
+                <p className="mt-1 text-sm text-gray-400">
+                  Dodaj znajomych w zakładce Konto → Znajomi
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Quick stats grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
+                    <span className="text-3xl font-bold text-[#49BF12]">
+                      {friendsStats.totalFriends}
+                    </span>
+                    <span className="mt-1 text-xs font-semibold text-gray-500">
+                      znajomych
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
+                    <span className="text-3xl font-bold text-[#49BF12]">
+                      {friendsStats.activeThisWeek}
+                    </span>
+                    <span className="mt-1 text-xs font-semibold text-gray-500">
+                      aktywnych w tym tygodniu
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
+                    <span className="text-3xl font-bold text-[#FCB351]">
+                      {friendsStats.combinedCO2.toFixed(1)}
+                      <span className="text-base font-semibold"> kg</span>
+                    </span>
+                    <span className="mt-1 text-xs font-semibold text-gray-500">
+                      CO₂ razem z grupą
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
+                    <span className="text-3xl font-bold text-[#FCB351]">
+                      {friendsStats.combinedBags}
+                    </span>
+                    <span className="mt-1 text-xs font-semibold text-gray-500">
+                      toreb razem z grupą
+                    </span>
+                  </div>
+                </div>
+
+                {/* Leaderboard */}
+                <div className="mt-2 rounded-[24px] border border-gray-100 bg-white p-5 shadow-sm">
+                  <div className="mb-4 flex items-center gap-2">
+                    <Trophy size={16} className="text-[#FCB351]" />
+                    <h3 className="font-bold text-gray-800">
+                      Ranking wśród znajomych
+                    </h3>
+                    {friendsStats.myRank !== null && (
+                      <span className="ml-auto rounded-full bg-[#F1F9D1] px-2 py-0.5 text-xs font-bold text-[#49BF12]">
+                        #{friendsStats.myRank} miejsce
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    {friendsStats.leaderboard.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className={cn(
+                          "flex items-center gap-3 rounded-2xl px-3 py-2",
+                          entry.isMe
+                            ? "bg-[#F1F9D1] ring-1 ring-[#D4E84D]"
+                            : "bg-gray-50",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "w-5 text-center text-sm font-bold",
+                            entry.rank === 1
+                              ? "text-[#FFD700]"
+                              : entry.rank === 2
+                                ? "text-[#C0C0C0]"
+                                : entry.rank === 3
+                                  ? "text-[#CD7F32]"
+                                  : "text-gray-400",
+                          )}
+                        >
+                          {entry.rank === 1
+                            ? "🥇"
+                            : entry.rank === 2
+                              ? "🥈"
+                              : entry.rank === 3
+                                ? "🥉"
+                                : `#${entry.rank}`}
+                        </span>
+
+                        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
+                          <Image
+                            src={entry.avatarUrl}
+                            alt={entry.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <span className="truncate text-sm font-semibold text-gray-800">
+                            {entry.isMe ? "Ty" : entry.name}
+                          </span>
+                          <span className="text-[11px] text-gray-400">
+                            {entry.level.name}
+                          </span>
+                        </div>
+
+                        <span className="shrink-0 text-sm font-bold text-[#FCB351]">
+                          {entry.lokaltuPoints} pkt
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import {
   Flag,
   Settings,
   UserCircle2,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +25,11 @@ export default async function ProfilePage() {
       label: "Zdobyte odznaki",
       icon: <Award className="h-6 w-6 text-gray-800" />,
       href: "/homescreen/profile/badges",
+    },
+    {
+      label: "Znajomi",
+      icon: <Users className="h-6 w-6 text-gray-800" />,
+      href: "/homescreen/profile/friends",
     },
     {
       label: "Moje zgłoszenia",
