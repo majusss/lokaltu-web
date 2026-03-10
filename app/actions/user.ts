@@ -2,6 +2,11 @@
 
 import prisma from "@/lib/prisma";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
+
+function normalizeTagId(tagId: string) {
+  return tagId.trim().toLowerCase();
+}
 
 export async function getUserDb() {
   const user = await currentUser();
@@ -120,12 +125,17 @@ export async function completeProfile(bagId?: string) {
     user.firstName || user.username || email.split("@")[0] || "Użytkownik";
   const avatarUrl = user.imageUrl || "";
 
+  const normalizedBagId = bagId ? normalizeTagId(bagId) : undefined;
+
+  if (normalizedBagId) {
+    await assignBagToCurrentUser(normalizedBagId);
+  }
+
   await prisma.user.upsert({
     where: {
       id: user.id,
     },
     update: {
-      bagId,
       profileCompleted: true,
       name,
       email,
@@ -136,8 +146,109 @@ export async function completeProfile(bagId?: string) {
       name,
       email,
       avatarUrl,
-      bagId,
+      bagId: normalizedBagId,
       profileCompleted: true,
+    },
+  });
+
+  revalidatePath("/(routes)/homescreen", "layout");
+}
+
+export async function assignBagToCurrentUser(tagId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const normalizedTagId = normalizeTagId(tagId);
+  if (!normalizedTagId) throw new Error("Nieprawidłowy identyfikator NFC.");
+
+  const existingBag = await prisma.bag.findUnique({
+    where: { nfcTagId: normalizedTagId },
+  });
+
+  if (!existingBag) {
+    throw new Error("Nie znaleziono torby z tym tagiem NFC.");
+  }
+
+  if (existingBag.userId && existingBag.userId !== user.id) {
+    throw new Error("Ta torba jest już przypisana do innego użytkownika.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const currentUserBag = await tx.bag.findFirst({
+      where: { userId: user.id },
+    });
+
+    if (currentUserBag && currentUserBag.id !== existingBag.id) {
+      await tx.bag.update({
+        where: { id: currentUserBag.id },
+        data: { userId: null, assignedAt: null },
+      });
+    }
+
+    await tx.bag.update({
+      where: { id: existingBag.id },
+      data: { userId: user.id, assignedAt: new Date() },
+    });
+
+    await tx.user.upsert({
+      where: { id: user.id },
+      update: { bagId: normalizedTagId },
+      create: {
+        id: user.id,
+        name: user.firstName || user.username || "Użytkownik",
+        email: user.emailAddresses[0]?.emailAddress || "",
+        avatarUrl: user.imageUrl || "",
+        bagId: normalizedTagId,
+      },
+    });
+  });
+
+  revalidatePath("/(routes)/homescreen", "layout");
+  revalidatePath("/complete-profile/scan");
+  revalidatePath("/homescreen/profile");
+}
+
+export async function detachCurrentUserBag() {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await prisma.$transaction(async (tx) => {
+    const bag = await tx.bag.findFirst({ where: { userId: user.id } });
+
+    if (bag) {
+      await tx.bag.update({
+        where: { id: bag.id },
+        data: { userId: null, assignedAt: null },
+      });
+    }
+
+    await tx.user.upsert({
+      where: { id: user.id },
+      update: { bagId: null },
+      create: {
+        id: user.id,
+        name: user.firstName || user.username || "Użytkownik",
+        email: user.emailAddresses[0]?.emailAddress || "",
+        avatarUrl: user.imageUrl || "",
+        bagId: null,
+      },
+    });
+  });
+
+  revalidatePath("/(routes)/homescreen", "layout");
+  revalidatePath("/homescreen/profile");
+}
+
+export async function getCurrentUserBag() {
+  const user = await currentUser();
+  if (!user) return null;
+
+  return prisma.bag.findFirst({
+    where: { userId: user.id },
+    select: {
+      id: true,
+      nfcTagId: true,
+      assignedAt: true,
     },
   });
 }

@@ -1,28 +1,27 @@
 "use client";
 
-import { completeProfile } from "@/app/actions/user";
+import { assignBagToCurrentUser, completeProfile } from "@/app/actions/user";
 import skanowanie_torby from "@/app/assets/skanowanie-torby.png";
 import { Button } from "@/components/ui/button";
 import { useNfc } from "@/lib/hooks/use-nfc";
 import { AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function ScanBagPage() {
   const router = useRouter();
   const { scanning, error, startScan } = useNfc();
   const [completeError, setCompleteError] = useState<string>("");
 
-  useEffect(() => {
-    handleAddBag();
-  }, []);
-
-  const handleAddBag = async () => {
+  const handleAddBag = useCallback(async () => {
     setCompleteError("");
     try {
       const result = await startScan(60000);
-      await completeProfile(result.content);
+
+      await completeProfile();
+      await assignBagToCurrentUser(result.content);
+
       router.push("/complete-profile/active");
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return;
@@ -30,7 +29,15 @@ export default function ScanBagPage() {
         e instanceof Error ? e.message : "Skanowanie NFC nie powiodło się",
       );
     }
-  };
+  }, [router, startScan]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void handleAddBag();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [handleAddBag]);
 
   return (
     <div className="anim-fade-in-up text-center">

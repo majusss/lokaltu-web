@@ -15,12 +15,23 @@ export async function verifyBag(
   const user = await currentUser();
   if (!user) return { ok: false, error: "Nie zalogowany." };
 
-  const userDb = await prisma.user.findUnique({ where: { id: user.id } });
-  if (!userDb) return { ok: false, error: "Nie znaleziono konta." };
-  if (!userDb.bagId) return { ok: false, error: "Brak przypisanej torby." };
+  const normalizedTag = tagId.toLowerCase().trim();
 
-  if (userDb.bagId.toLowerCase().trim() !== tagId.toLowerCase().trim()) {
+  const userDb = await prisma.user.findUnique({
+    where: { id: user.id },
+    include: { bag: true },
+  });
+  if (!userDb) return { ok: false, error: "Nie znaleziono konta." };
+  if (!userDb.bagId || !userDb.bag) {
+    return { ok: false, error: "Brak przypisanej torby." };
+  }
+
+  if (userDb.bag.nfcTagId.toLowerCase().trim() !== normalizedTag) {
     return { ok: false, error: "To nie jest Twoja torba." };
+  }
+
+  if (userDb.bag.userId !== user.id) {
+    return { ok: false, error: "Ta torba nie jest przypisana do Ciebie." };
   }
 
   return { ok: true };
@@ -33,9 +44,8 @@ export async function checkUserBag(): Promise<{ hasBag: boolean }> {
   const user = await currentUser();
   if (!user) return { hasBag: false };
 
-  const userDb = await prisma.user.findUnique({ where: { id: user.id } });
-  console.log(userDb?.bagId);
-  return { hasBag: !!userDb?.bagId };
+  const bag = await prisma.bag.findFirst({ where: { userId: user.id } });
+  return { hasBag: !!bag };
 }
 
 /**

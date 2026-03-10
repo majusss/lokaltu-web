@@ -1,7 +1,10 @@
 import { getUserDb } from "@/app/actions/user";
+import { amIAdmin } from "@/app/actions/admin";
 import { getLevel } from "@/lib/utils/leveling";
 import { currentUser } from "@clerk/nextjs/server";
 import {
+  Briefcase,
+  Shield,
   Award,
   ChevronRight,
   FilePlus2,
@@ -16,12 +19,27 @@ import CompareSection from "./_components/compare-section";
 
 export default async function ProfilePage() {
   const user = await currentUser();
-  const userDb = await getUserDb();
+  const [userDb, admin] = await Promise.all([getUserDb(), amIAdmin()]);
+  const isAdmin = !!admin;
 
   const points = userDb?.lokaltuPoints ?? 0;
   const level = getLevel(points);
 
   const menuItems = [
+    {
+      label: "Moja torba NFC",
+      icon: <Briefcase className="h-6 w-6 text-gray-800" />,
+      href: "/homescreen/profile/bag",
+    },
+    ...(isAdmin
+      ? [
+          {
+            label: "Pula toreb NFC",
+            icon: <Shield className="h-6 w-6 text-gray-800" />,
+            href: "/homescreen/profile/bag-admin",
+          },
+        ]
+      : []),
     {
       label: "Zdobyte odznaki",
       icon: <Award className="h-6 w-6 text-gray-800" />,
@@ -105,15 +123,14 @@ export default async function ProfilePage() {
           ))}
         </div>
 
-        {/* Compare with friend */}
         {userDb && (
           <div className="space-y-3 pt-2">
             <h2 className="text-sm font-black tracking-widest text-gray-400 uppercase">
               Porównaj ze znajomym
             </h2>
             <p className="text-sm text-gray-400">
-              Pokaż swój kod QR lub zeskanuj czyjś, aby porównać statystyki
-              bez dodawania do znajomych.
+              Pokaż swój kod QR lub zeskanuj czyjś, aby porównać statystyki bez
+              dodawania do znajomych.
             </p>
             <CompareSection userId={userDb.id} />
           </div>

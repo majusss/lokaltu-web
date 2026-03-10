@@ -2,6 +2,11 @@
 
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
+
+function normalizeTagId(tagId: string) {
+  return tagId.trim().toLowerCase();
+}
 
 export async function amIAdmin() {
   const user = await currentUser();
@@ -61,6 +66,103 @@ export async function deletePost(postId: number, reason: string) {
       where: { id: postId },
     }),
   ]);
+
+  return { success: true };
+}
+
+export async function getAdminBagPool() {
+  if (!(await amIAdmin())) {
+    throw new Error("Unauthorized");
+  }
+
+  return prisma.bag.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      nfcTagId: true,
+      assignedAt: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+}
+
+export async function addBagToPool(tagId: string) {
+  if (!(await amIAdmin())) {
+    throw new Error("Unauthorized");
+  }
+
+  const normalizedTagId = normalizeTagId(tagId);
+  if (!normalizedTagId) {
+    throw new Error("Nieprawidłowy identyfikator NFC.");
+  }
+
+  const exists = await prisma.bag.findUnique({
+    where: { nfcTagId: normalizedTagId },
+  });
+
+  if (exists) {
+    throw new Error("Torba z tym tagiem NFC już istnieje.");
+  }
+
+  const bag = await prisma.bag.create({
+    data: {
+      nfcTagId: normalizedTagId,
+    },
+    select: {
+      id: true,
+      nfcTagId: true,
+      assignedAt: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  revalidatePath("/homescreen/profile");
+  revalidatePath("/homescreen/profile/bag-admin");
+
+  return bag;
+}
+
+export async function removeBagFromPool(bagId: string) {
+  if (!(await amIAdmin())) {
+    throw new Error("Unauthorized");
+  }
+
+  const bag = await prisma.bag.findUnique({
+    where: { id: bagId },
+    select: {
+      id: true,
+      userId: true,
+      nfcTagId: true,
+    },
+  });
+
+  if (!bag) {
+    throw new Error("Nie znaleziono torby.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    if (bag.userId) {
+      await tx.user.update({
+        where: { id: bag.userId },
+        data: { bagId: null },
+      });
+    }
+
+    await tx.bag.delete({ where: { id: bag.id } });
+  });
+
+  revalidatePath("/homescreen/profile");
+  revalidatePath("/homescreen/profile/bag-admin");
 
   return { success: true };
 }
