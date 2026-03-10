@@ -129,7 +129,7 @@ export default async function ProfilePage() {
             <h2 className="text-sm font-black tracking-widest text-gray-400 uppercase">
               Administrator
             </h2>
-            <div className="flex flex-col divide-y divide-gray-50 rounded-2xl border border-gray-100 px-1">
+            <div className="flex flex-col divide-y divide-gray-50">
               {adminMenuItems.map((item) => (
                 <Link
                   key={item.href}
@@ -137,7 +137,7 @@ export default async function ProfilePage() {
                   className="group flex cursor-pointer items-center justify-between py-5 transition-all active:opacity-60"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 transition-colors group-active:bg-gray-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors group-active:bg-gray-50">
                       {item.icon}
                     </div>
                     <span className="text-lg font-semibold tracking-tight text-gray-700">

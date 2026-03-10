@@ -101,7 +101,7 @@ export default function CompareSection({ userId }: { userId: string }) {
       <button
         onClick={handleScanQr}
         disabled={scanning}
-        className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#84cc16] text-base font-bold text-white shadow-lg shadow-green-200 transition-all hover:bg-[#71af12] active:scale-[0.98] disabled:opacity-50"
+        className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#84cc16] text-base font-bold text-white transition-all hover:bg-[#71af12] active:scale-[0.98] disabled:opacity-50"
       >
         <ScanLine className="h-5 w-5" />
         {scanning ? "Skanowanie..." : "Skanuj kod"}
